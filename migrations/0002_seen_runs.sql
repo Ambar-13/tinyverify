@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS seen_runs (
+  run_id TEXT PRIMARY KEY,
+  seen_at TEXT NOT NULL
+);
