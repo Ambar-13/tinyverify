@@ -6,6 +6,7 @@
 import { setConnectedProbe } from './catalog';
 import type { RegistryId } from '../types';
 import type { Adapter } from './adapter';
+import { caCslb } from './ca-cslb';
 import { flDbpr } from './fl-dbpr';
 import { flMqa } from './fl-mqa';
 
@@ -13,6 +14,7 @@ import { flMqa } from './fl-mqa';
 export const adapters: Partial<Record<RegistryId, Adapter>> = {
   'fl-mqa': flMqa,
   'fl-dbpr': flDbpr,
+  'ca-cslb': caCslb,
 };
 
 /** Throws when the registry has no adapter. */
