@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON C",
+  "licence_number": "CPC0000002",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2022-08-31",
+  "issued": "2018-11-21",
+  "licence_type": "Certified Pool/Spa Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "MCPOOLS INC"
+  ]
+}

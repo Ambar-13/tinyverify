@@ -1,0 +1,35 @@
+{
+  "rows": [
+    {
+      "licence_number": "CCC0000001",
+      "name": "SAMPLE, PERSON A",
+      "name_type": "Primary",
+      "licence_type": "Certified Residential Contractor",
+      "status_raw": "Current,Active",
+      "expires": "08/31/2028",
+      "city": "SAMPLE CITY",
+      "link_url": "https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=00000000000000000000000000000000"
+    },
+    {
+      "licence_number": "CCC0000002",
+      "name": "SAMPLE ROOFING LLC",
+      "name_type": "DBA",
+      "licence_type": "Certified Roofing Contractor",
+      "status_raw": "Current,Inactive",
+      "expires": "08/31/2025",
+      "city": "SAMPLE CITY",
+      "link_url": "LicenseDetail.asp?SID=&id=00000000000000000000000000000001"
+    },
+    {
+      "licence_number": "RC0000003",
+      "name": "SAMPLE, PERSON B",
+      "name_type": "Alternate",
+      "licence_type": "Registered Residential Contractor",
+      "status_raw": "Null and Void",
+      "expires": "",
+      "city": "",
+      "link_url": ""
+    }
+  ],
+  "total": 3
+}

@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON D",
+  "licence_number": "CCC0000003",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2022-08-31",
+  "issued": "1989-06-13",
+  "licence_type": "Certified Roofing Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "PSI ROOFING"
+  ]
+}

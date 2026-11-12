@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON G",
+  "licence_number": "EC0000006",
+  "status_raw": "Delinquent,Active",
+  "status": "delinquent",
+  "expires": "2022-08-31",
+  "issued": "2017-05-23",
+  "licence_type": "Certified Electrical Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "SAMPLE TWO LLC"
+  ]
+}

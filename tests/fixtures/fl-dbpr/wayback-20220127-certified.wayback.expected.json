@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON E",
+  "licence_number": "EG0000004",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2022-08-31",
+  "issued": "1999-01-26",
+  "licence_type": "Certified Alarm System Contractor II",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "APPLICATIONS BY DESIGN INC."
+  ]
+}

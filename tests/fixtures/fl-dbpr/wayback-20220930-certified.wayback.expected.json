@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON F",
+  "licence_number": "CBC0000005",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2024-08-31",
+  "issued": "2005-02-16",
+  "licence_type": "Certified Building Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "STONEBRIDGE CONSTRUCTION SERVICES LLC"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON H",
+  "licence_number": "CBC0000007",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2024-08-31",
+  "issued": "2018-05-23",
+  "licence_type": "Certified Building Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "REGIS CONSTRUCTION L.L.C."
+  ]
+}

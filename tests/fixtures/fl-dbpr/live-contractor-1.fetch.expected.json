@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "CCC0000000",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2028-08-31",
+  "issued": "2024-03-06",
+  "licence_type": "Certified Roofing Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": ["SAMPLE ONE ROOFING LLC"]
+}

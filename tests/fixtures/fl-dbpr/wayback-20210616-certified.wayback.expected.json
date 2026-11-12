@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON B",
+  "licence_number": "CRC0000001",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2022-08-31",
+  "issued": "2018-12-17",
+  "licence_type": "Certified Residential Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "SKYREACH CONSTRUCTION, LLC"
+  ]
+}

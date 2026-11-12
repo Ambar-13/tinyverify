@@ -1,0 +1,16 @@
+{
+  "name": "SAMPLE, PERSON K",
+  "licence_number": "CGC0000010",
+  "status_raw": "Current,Active",
+  "status": "active",
+  "expires": "2024-08-31",
+  "issued": "2004-04-07",
+  "licence_type": "Certified General Contractor",
+  "discipline_flag": null,
+  "discipline_actions": [],
+  "data_as_of": null,
+  "city": "SAMPLE CITY",
+  "other_names": [
+    "CAFE CONSTRUCTION & DEVELOPMENT, INC."
+  ]
+}

@@ -1,0 +1,1149 @@
+
+
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+	
+var NS4 = (document.layers);
+var IE4 = (document.all);
+var week_days = [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ];
+var months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+               'Sep', 'Oct', 'Nov', 'Dec' ];
+			   
+var today = new Date();
+var curr_day = today.getDate();
+var curr_month = today.getMonth();
+
+var curr_year = today.getYear();
+
+var years  = new Array((curr_year + 5) - 2001);
+for (i = 0; i < years.length; i++) years[i] = 2001 + i;
+
+
+var default_left = 100;          
+var default_top = 80;            
+var default_width = 185;         
+var default_height = 195;        
+var default_cell_width = 20;     
+var default_cell_height = 20;    
+var default_bg_color = 'e9edf2'; 
+var cal_offset_y = 32;           
+
+function calendar(is_popup, win, handler, left, top, width, height,
+  cell_width, cell_height, bg_color, sel_month, sel_year)
+{
+  this.is_popup = is_popup;
+  
+  this.parent = null;
+  
+  this.window = null;
+  
+  if (this.is_popup)
+  
+    this.parent = win;
+    
+  else
+  
+    this.window = win;
+    
+  this.handler = handler;
+  
+  this.left = left;
+  
+  this.top = top;
+  
+  this.width = width || default_width;
+  
+  this.height = height || default_height;
+  
+  this.cell_width = cell_width || default_cell_width;
+  
+  this.cell_height = cell_height || default_cell_height;
+  
+  this.bg_color = bg_color || default_bg_color;
+  
+  this.sel_month = sel_month;
+  
+  this.sel_year = sel_year;
+  
+  if (this.sel_month == null) this.sel_month = curr_month;
+  
+  if (this.sel_year == null) this.sel_year = curr_year;
+  
+  this.days = new Array(42);
+  
+  this.cal = null;
+  
+  this.day_table = null;
+
+  calendar.prototype.create_cal = calendar_create_cal_IE4;
+  
+  calendar.prototype.show_days = calendar_show_days_IE4;
+  
+  calendar.prototype.popup_cal = calendar_popup_cal;
+  
+  calendar.prototype.new_month = calendar_new_month;
+  
+  calendar.prototype.prev_month = calendar_prev_month;
+  
+  calendar.prototype.next_month = calendar_next_month;
+  
+  calendar.prototype.clicked_day = calendar_clicked_day;
+  
+  //Variables for IE
+  
+  if (calendar.prototype.id == null) calendar.prototype.id = 0;
+  
+  calendar.prototype.id++;
+  
+  this.id = calendar.prototype.id;
+  
+  this.cal_id = 'cal' + this.id;
+  
+  this.day_table_id = 'day_table' + this.id;
+  
+  this.select_form_id = 'select_form' + this.id;
+}
+
+function calendar_create_cal_IE4()
+{
+  if (this.is_popup)
+  {
+    var x = this.parent.screenLeft + (this.left || default_left);
+    var y = this.parent.screenTop + (this.top || default_top);
+    this.window = this.parent.open("", this.cal_id, 'left=' + x + ',top=' + y + ',width=' + this.width + ',height=' + this.height + ',scrollbars=no, resizeable=no');
+    this.window.document.open();
+	this.window.document.writeln('<body alink="#000000" vlink="#000000" link="#000000">');
+	if (window.top.document.forms[0].elements['flag'].value == 'from')
+	    this.window.document.writeln('<title>Date From</title>');
+	else
+		this.window.document.writeln('<title>Date To</title>');
+    this.window.document.close();
+  }
+
+  this.window.document.body.insertAdjacentHTML("beforeEnd", "<div id='" + this.cal_id + "' style='position:absolute'></div>");
+  this.cal = this.window.document.all[this.cal_id];
+  if (this.is_popup)
+  {
+    this.cal.style.pixelLeft = 0;
+    this.cal.style.pixelTop = 0;
+  }
+  else
+  {
+    this.cal.style.pixelLeft = this.left || default_left;
+    this.cal.style.pixelTop = this.top || default_top;
+  }
+  this.cal.style.zIndex = 1;
+  this.cal.style.width = this.width;
+  this.cal.style.height = this.height;
+  this.cal.style.backgroundColor = this.bg_color;
+  this.cal.style.visibility = 'visible';
+  this.cal.picker = this;
+  var str =
+  "<center>\n" +
+  "<table border='0'>\n" +
+  "  <tr>\n" +
+  "    <td align='center'>\n" +
+  "      <form name='" + this.select_form_id + "'>\n" +
+  "        &nbsp;<select name='month_sel' onChange='document.all." + this.cal_id + ".picker.new_month()'>\n";
+  for (i = 0; i < months.length; i++)
+    str += "        <option value='" + i + "'>" + months[i] + "\n";
+  str += "        </select>\n" +
+  "        <select name='year_sel' onChange='document.all." + this.cal_id + ".picker.new_month()'>\n";
+  for (i = 0; i < years.length; i++)
+    str += "        <option value='" + years[i] + "'>" + years[i] + "\n";
+  str += "        </select>&nbsp;\n" +
+  "      </form>\n" +
+  "    </td>\n" +
+  "  </tr>\n" +
+  "</table>\n" +
+  "</center>\n" +
+  "<div id='" + this.day_table_id + "' style='position:absolute'></div>\n";
+  this.cal.innerHTML = str;
+  this.day_table = this.window.document.all[this.day_table_id];
+  this.day_table.style.pixelLeft = 4;
+  this.day_table.style.pixelTop = cal_offset_y;
+  this.day_table.style.zIndex = 2;
+  this.day_table.style.visibility = 'inherit';
+  this.day_table.picker = this;
+}
+
+
+function calendar_show_days_IE4()
+{
+  var month_select = this.window.document.forms[this.select_form_id]['month_sel'];
+  var year_select = this.window.document.forms[this.select_form_id]['year_sel'];
+  
+  // check the date field and load the day_select value
+  
+  var day_select_from = window.top.document.forms[0].elements['dayFrom'].value;
+  var last_month_from = window.top.document.forms[0].elements['monthFrom'].value;
+  var last_year_from = window.top.document.forms[0].elements['yearFrom'].value;
+	
+  var day_select_to = window.top.document.forms[0].elements['dayTo'].value;
+  var last_month_to = window.top.document.forms[0].elements['monthTo'].value;
+  var last_year_to = window.top.document.forms[0].elements['yearTo'].value;
+	
+  month_select.selectedIndex = this.sel_month;
+  year_select.selectedIndex = this.sel_year - years[0];
+
+  var days_in_month = (new Date(this.sel_year, this.sel_month+1, 0)).getDate();
+  var day_of_week_first = (new Date(this.sel_year, this.sel_month, 1)).getDay();
+  for (i = 0; i < this.days.length; i++) this.days[i] = 0;
+  for (i = 0; i < days_in_month; i++)
+    this.days[i + day_of_week_first] = i + 1;
+
+  var str =
+  "<center>\n" +
+  "<table border='0'>\n" +
+  "<form>\n" +
+  "  <tr>\n";
+  for (j = 0; j < week_days.length; j++)
+  {
+    str += "    <td bgcolor='#b6c9dc' align='center' valign='middle' width='" + this.cell_width + "'><font color='#000000'><strong>" + week_days[j] + "</strong></font></td>\n";
+  }
+  str += "  </tr>\n";
+  for (i = 0; i < 6; i++)
+  {
+    str += "  <tr>\n";
+    for(j = 0; j < 7; j++)
+    {
+      var val = this.days[i * 7 + j];
+      if (this.days[i * 7 + j])
+		 {
+		  if (val == day_select_from && this.sel_month == last_month_from && this.sel_year == last_year_from)
+		      str += "    <td align='center' valign='middle' height='" + this.cell_height + "'><a href='' onClick='document.all." + this.day_table_id + ".picker.clicked_day(" + this.days[i * 7 + j] + ")'><strong>[" + val + "]</strong></a></td>\n";
+		  else
+			 if (val == day_select_to && this.sel_month == last_month_to && this.sel_year == last_year_to)
+				 str += "    <td align='center' valign='middle' height='" + this.cell_height + "'><a href='' onClick='document.all." + this.day_table_id + ".picker.clicked_day(" + this.days[i * 7 + j] + ")'><strong>[" + val + "]</strong></a></td>\n";
+			 else
+				if ((window.top.document.forms[0].elements['flag'].value == 'from' && day_select_to > "" && val > day_select_to && this.sel_month >= last_month_to && this.sel_year >= last_year_to) || (window.top.document.forms[0].elements['flag'].value == 'to' && day_select_from > "" && ((val < day_select_from && this.sel_month == last_month_from && this.sel_year == last_year_from) || (this.sel_month < last_month_from && this.sel_year <= last_year_from) || (this.sel_year < last_year_from))))
+				    str += "    <td align='center' valign='middle' height='" + this.cell_height + "'>" + val + "</td>\n";
+                else
+				   //if (val > curr_day && this.sel_month == curr_month && this.sel_year == curr_year)
+				   //    str += "    <td align='center' valign='middle' height='" + this.cell_height + "'>" + val + "</td>\n";
+				   //else
+		    	       str += "    <td align='center' valign='middle' height='" + this.cell_height + "'><a href='' onClick='document.all." + this.day_table_id + ".picker.clicked_day(" + this.days[i * 7 + j] + ")'>" + val + "</a></td>\n";
+			
+		  }
+      else
+         str += "    <td>&nbsp;</td>\n";
+    }
+    str += "  </tr>\n";
+  }
+  str += 
+  "</form>\n" +
+  "</table>\n" +
+  "</center>\n";
+  this.day_table.innerHTML = str;
+}
+
+function calendar_popup_cal()
+{
+  if (this.is_popup)
+  {
+    if (this.cal && this.window && !this.window.closed)
+      this.window.close();
+    else
+    {
+      this.create_cal();
+      this.show_days();
+    }
+  }
+  else
+  {
+    if (!this.cal)
+    {
+      this.create_cal();
+      this.show_days();
+    }
+    else
+    {
+      if (NS4)
+      {
+        if (this.cal.visibility == 'show')
+          this.cal.visibility = 'hide';
+        else
+          this.cal.visibility = 'show';
+      }
+      else
+      {
+        if (this.cal.style.visibility == 'visible')
+          this.cal.style.visibility = 'hidden';
+        else
+          this.cal.style.visibility = 'visible';
+      }
+    }
+  }
+}
+
+function calendar_new_month()
+{
+  var month_select = this.cal.document.forms[this.select_form_id]['month_sel'];
+  this.sel_month = new Number(month_select.options[month_select.selectedIndex].value);
+  var year_select = this.cal.document.forms[this.select_form_id]['year_sel'];
+  this.sel_year = new Number(year_select.options[year_select.selectedIndex].value);
+		
+  if (this.sel_year == curr_year)
+  {
+  	 if (this.sel_month > curr_month)
+	 {
+	    this.sel_month = curr_month;
+		this.show_days();
+	 }
+     else
+  		this.show_days();
+  }
+  else
+  	this.show_days();	
+}
+
+function calendar_prev_month()
+{
+  this.sel_month--;
+  if (this.sel_month < 0)
+  {
+    this.sel_month = 11;
+    this.sel_year--;
+  }
+  this.show_days();
+}
+
+function calendar_next_month()
+{
+  this.sel_month++;
+  if (this.sel_month > 11)
+  {
+    this.sel_month = 0;
+    this.sel_year++;
+  }
+  this.show_days();
+}
+
+function calendar_clicked_day(day)
+{
+  if (this.is_popup)
+    this.window.close();
+  else
+    this.cal.style.visibility = 'hidden';
+  
+  this.cal.document.forms[this.select_form_id]['day_sel'] = day;
+  
+  
+  if (this.sel_year == curr_year && this.sel_month == curr_month && day > curr_day) day = curr_day; 
+  
+  
+  var sel_date = new Date(this.sel_year, this.sel_month, day);
+  if (this.handler) this.handler(this, sel_date);
+}
+
+function get_days_in_month(mon, yr)
+{
+  var month = new Number(mon);
+  var year = new Number(yr);
+  var mdays = [ [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+                [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] ];
+  var isleap =
+     (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 1 : 0;
+  return mdays[isleap][month];
+}
+
+var cal1 = new calendar(true, self, my_date_selected, 510, 200);
+
+var cal2 = new calendar(true, self, my_date_selected, 730, 200);
+
+cal1.date_fld = 'datefrom';
+
+cal2.date_fld = 'dateto';
+
+function my_date_selected(cal, date)
+{
+  document.forms[0].elements[cal.date_fld].value =
+    (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
+    
+  document.forms[0].elements["dayHold"].value = (date.getMonth() + 1);
+  document.forms[0].elements["monthHold"].value = date.getDate();
+  document.forms[0].elements["yearHold"].value = date.getFullYear();
+  
+}
+
+function pop_cal1()
+{
+
+	document.forms[0].elements["flag"].value = "from";
+	
+	cal1.popup_cal();	
+	
+}
+
+function pop_cal2()
+{
+
+	document.forms[0].elements["flag"].value = "to";
+	
+	cal2.popup_cal();
+
+}
+	//-->
+</SCRIPT>
+
+
+<head>
+
+
+<title>DBPR - SAMPLE, PERSON J; Doing Business As: OMEGA ROOFING INC, Certified Roofing Contractor</title>
+<meta name="ROBOTS" content="NOARCHIVE">
+<meta name="Description" content="License Name: SAMPLE, PERSON J; Doing Business As: OMEGA ROOFING INC; Certified Roofing Contractor; License Status: Current,Active; ; Location: 1 Sample St, SAMPLE CITY, FL 00000"
+<!--***START TOP INCLULDE FILE***-->
+
+
+
+<!-- <script language="JavaScript">function LaunchHelp() { // in a new window  window.open("http://bprtlcn04/help.htm",'','alwaysRaised=1,dependent=1,directories=0,height=400,hotkeys=0,location=0,menubar=0,resizable=1,screenX=200,screenY=200,scrollbars=0,status=1,toolbar=0,width=500');}</script> -->
+<style type="text/css">
+	<!--
+	@media all
+	{
+	#main	{border:none;}
+	A.main:link {color:"#0000FF"; text-decoration: none; font-size:12px; font-weight:normal;}
+	A.main:visited {color:"#ffffff"; text-decoration: none; font-size:12px; font-weight:normal;}
+	A.main:hover {color:"red"; text-decoration: none; font-size:12px; font-weight:normal;}
+	
+	A.log:link {color:"#ffffff"; text-decoration: none; font-size:12px}
+	A.log:visited {color:"#ffffff"; text-decoration: none; font-size:12px}
+	A.log:hover {color:"red"; text-decoration: none; font-size:12px}
+	
+	A.footer:link {color:"blue"; text-decoration: none; font-size:11px}
+	A.footer:visited {color:"blue"; text-decoration: none; font-size:11px}
+	A.footer:hover {color:"blue"; text-decoration: underline; font-size:11px}
+
+	td.main { line-height : 100% }
+	td.main a:active { color : #052A73; text-decoration: none;  font-size:12px}
+	td.main a:link { color : #052A73; text-decoration: none;  font-size:12px}
+	td.main a:visited { color : #A9A9A9; text-decoration: none;  font-size:12px}
+	td.main a:hover { color : #016ddc; text-decoration: none;  font-size:12px}
+	}
+	
+li {
+font-size:12px;
+padding:3px;
+list-style: none;
+}
+
+li:top {
+font-size:12px;
+/*padding:3px;*/
+list-style: none;
+}
+
+li a:top {
+display: block;
+  padding: 8px!important;
+  margin: 5px!important;
+color:red;
+}	
+
+li.list {
+font-size:12px;
+padding:3px;
+list-style: none;
+}
+
+li.listtop {
+font-size:12px;
+padding:0;
+list-style: none;
+margin-left:40px;
+}
+
+th.list	{
+	color:#016ddc;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-size:12px;
+	text-align: left;
+	padding:5px;
+	background-color: #e3e3e3
+}
+
+td.list	{
+
+	font-size:12px;
+	padding:3px;
+}
+
+td {
+    color:#333;
+    font-family: "Arial",Helvetica, sans-serif;
+    font-size:12px;
+}
+
+h1	{
+	color:#016ddc;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-size:1em;
+	font-weight:bold;
+	padding-top:0;
+	margin-top:0px;
+	margin-bottom:.5em;
+	text-transform:uppercase; 
+}
+
+h2	{
+	color:#333;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-size:1em;
+	font-weight:bold;
+	padding-bottom:.2em;
+	padding-top:0;
+	margin-bottom:0;
+	margin-top:0;
+}
+
+th	{
+	color:#016ddc;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-size:1em;
+	font-weight:bold;
+	padding-bottom:.2em;
+	padding-top:0;
+	margin-bottom:0;
+	margin-top:0;
+}
+
+a:link.hnav {
+	color:white;
+	text-decoration:none;
+}
+
+a:visited.hnav {
+	color:white;
+	text-decoration:none;
+}
+
+a:hover.hnav {
+	text-decoration:underline;
+	color:white;
+}
+
+a:active.hnav {
+	/*text-decoration:underline;*/
+	color:white;
+}
+	
+a:link	{
+	color:#016ddc;
+	font-family: "arial",Helvetica, sans-serif;
+	font-weight:normal;
+    font-size: 12px;
+	text-decoration: none;
+    
+}
+	a:link:hover	{
+	color:#0277f0;
+	font-family: "arial",Helvetica, sans-serif;
+	font-weight:normal;
+    font-size: 12px;
+	text-decoration: underline;
+    
+}
+    a.top:link	{
+	display: block;
+	font-family: 'Arial',Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: 600;	
+    padding: 8px;
+	float:left;
+	text-decoration: none;	
+}
+
+	a.topbutton:link	{
+	background-color: #016ddc;
+	font-size: 12px;	
+	color:#fff;	
+  	display: block;
+    padding: 8px;
+    float:left;
+	text-decoration: none;
+}
+	a.topbutton:active	{
+	
+	color:#fff;	
+  	
+}
+	a.topbutton:visited	{
+	
+	color:#fff;	
+  	
+}
+	a.topbutton:link:hover	{
+	background-color: #0277f0;
+    color:#fff;
+	text-decoration: none;	
+}
+.button {
+  background-color: #0262c4;
+  border: none;
+  font-family: "Arial",Helvetica, sans-serif;
+  color: white!important;
+  padding: 5px 10px;
+  font-weight: 300;
+  /*text-align: left;*/
+  text-decoration: none;
+  /*display: inline-block;*/
+  /*float: right;*/
+  font-size: 13px!important;
+  margin: 5px 3px;
+  cursor: pointer;
+}	
+ .button:hover {
+  color: white;
+  background-color: #016ddc;
+}
+ .button:visited {
+  color: white!important;
+  
+}
+	a.button:visited{
+	color:#ffffff;
+	font-size: 13px!important;
+	background-color: #0262c4;
+	padding: 5px 10px;
+	margin: 5px 3px;
+	font-family: "Arial",Helvetica, sans-serif;
+	text-decoration: none;
+}
+	a.button:hover{
+	color:yellow;
+	font-size: 13px!important;
+	background-color: #016ddc;
+	padding: 5px 10px;
+	margin: 5px 3px;
+	font-family: "Arial",Helvetica, sans-serif;
+	text-decoration: none;
+}
+a:visited	{
+	color:#DE5427;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-weight:normal;
+}
+    
+    a.top:visited	{
+	color:#DE5427;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-weight:bold;
+    text-decoration: none;
+}
+
+a:hover	{
+	color:#016ddc;
+	font-family: "Arial",Helvetica, sans-serif;
+	font-weight:normal;
+    text-decoration: underline
+}
+    a.top:hover	{
+	color:#016ddc;
+	text-decoration: underline;
+	}
+
+a:active	{
+	color:rgb(16,26,88);
+	font-family: "Arial",Helvetica, sans-serif;
+	font-weight:bold;
+	font-size:15px;
+	}
+a.main:link {font-weight:normal;}
+a.main:visited {font-weight:normal;}
+a.main:hover {font-weight:normal; text-decoration: 525353}
+a.main:active {font-weight:normal;}
+
+
+	#contact	{
+	clear:both;
+    background-color: #ffffff;    
+	color:#3D3D3D;
+	font-family: "Arial",Helvetica, sans-serif;
+    font-size:11px;
+    padding-top:10px;
+	text-align:center;
+	border-top: 1px dashed #c1c0bf;
+    }
+    .contact    {
+    font-size:11px;
+    background-color:#ffffff;    
+    padding: 0 25px 10px 25px; 
+    margin: 0;    
+    }
+    #footer	{
+	clear:both;
+	color:rgb(77,87,122);
+	font-family: "Arial",Helvetica, sans-serif;
+	font-size:10px;
+	margin:100%;
+	text-align:center;
+	width:100%;
+	
+    }
+	input[type=text] {
+  
+  color:#333;
+  font-size:14px;    
+  padding: 5px 10px;
+  margin: 0 10px 5px 6px;
+  display: inline-block;
+  border: 1px solid #999;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+	select.select {
+  padding: 3px 10px;
+  color:#333;
+  background-color: #fff;
+  font-size:14px;    
+  border: 1px solid #999;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+    .optgroup { font-size:14px; color:#333333; padding: 0 3px 5px 3px;}
+	
+	@media print
+	{
+	#main   {border:none; 
+	               width: 7in;
+	               margin-left: -.25in; height: auto;}
+	.leftNav {display:none;}
+	.banner {display:none;}
+	body	{background-image:url("../../portal/images/bg2.png")
+	        background-color:#fff;}
+    
+
+   ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+}
+
+   ul.b {
+  list-style-type: disc;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+}
+li.top {
+  float: left;
+  /*margin: 3px;
+  padding: 0;	*/
+}
+
+li a:top {
+  display: block;
+  padding: 8px;
+  margin: 5px;
+  }
+     li a:top:hover{
+  text-decoration: underline!important;
+ list-style: none;
+		 color:#016ddc;
+}
+
+li a:top:hover:not(.active) {
+  list-style: none;
+  color:#016ddc;
+ 
+    
+}
+
+
+    
+	-->
+</style>
+
+
+
+<BODY margin-left:50; margin-right:50; bgColor="#fff" background="../../images/bg2.png" style="min-height: 100vh; background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;background-size: cover; margin: 0 auto; max-width: 935px;">
+
+<!--BEGIN MY FLORIDA LICENSE LOGO-->
+<TABLE style="margin-top:45px; margin-left: auto; margin-right: auto" cellSpacing="0" cellPadding="0" width="100%"  bgcolor="#ffffff" id="main">
+     <tr>
+        <td>
+    <table width="100%" cellspacing="0">
+        <tr align="center">
+            <td style="align-content: center; background-color: #58555A; height: 50px; color:#f2f2f2; padding:25px 0; letter-spacing: 3px; font-family: "Arial",Helvetica, sans-serif; font-size: 12px; font-weight:600"><b>THE OFFICIAL SITE OF THE FLORIDA DEPARTMENT OF BUSINESS & PROFESSIONAL REGULATION</b></td>
+        </tr>
+    </table>
+    
+    <table style="width: 100%; background-color:white; padding:20px 0 0 10px" cellspacing="0">
+        <tr>
+   			<td><a href="http://www.myfloridalicense.com/dbpr/"><img ALT="Click here to access the department's home page" SRC="../../images/top_logo2.gif" BORDER="0"></a></td>
+            <td style="width: 300px;">
+                <ul style="list-style-type: none; margin: 0 0 15px 0; padding: 015px 0 0 0; overflow: hidden;font-size: 13px; font-weight:600;">
+                 <li class="listtop"><a class="top" href="https://www2.myfloridalicense.com/">HOME</a></li>
+				 <li class="listtop"><a class="top"  href="https://www2.myfloridalicense.com/contact-us/">CONTACT US</a></li>
+				 <li class="listtop"><a class="topbutton" href="https://www.myfloridalicense.com/datamart/mainMenuFLDBPR.do">MY ACCOUNT</a></li>	
+                 </ul>
+            </td> 
+        </tr>
+    </table>
+	<!--END MY FLORIDA LICENSE LOGO-->
+   
+			<table CELLSPACING="0" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER" BORDER="0" VALIGN="top" bgcolor="ffffff">
+                
+  				
+					
+					<!--START BANNER & TOP NAV & LOGGED IN AS-->
+					
+					<!--END BANNER & TOP NAV & LOGGED IN AS-->
+				
+   				<tr VALIGN="TOP">
+					<!--LEFT NAVIGATION-->
+   					<td>
+						<table cellpadding="0" cellspacing="0" border="0" width="225px; margin-bottom:15px" >
+							<tr>
+
+								<td style="text-align: left; font-size: 15px; font-weight:600; padding: 10px 0 11px 15px; color:#016DDC;">ONLINE SERVICES</td>
+                			</tr>
+							<tr>
+
+							<!--	<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:10px 15px 5px 15px;"><a class="main" href="/intentions2.asp?SID=" title="Click here to apply for a new license.">Apply for a License</a></td> -->
+								<td BGCOLOR="#b6c9dc"><font size="-1">&nbsp;&nbsp;&nbsp;<a class="main" href="https://www2.myfloridalicense.com/licensing-and-regulation/" title="Click here to apply for a new license."><font face="verdana">Apply for a License</font></a></font></td> 
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="/wl11.asp?mode=0&SID=" title="Click here to search for an individual or organization.">Verify a Licensee</a></td>
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="/wl11.asp?mode=0&SID=&brd=H" title="Click here to View Food and Lodging Inspections.">View Food & Lodging Inspections</a></td>
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="https://www2.myfloridalicense.com/file-a-complaint/" title="Click here to submit a complaint to the Department.">File a Complaint</a></td>
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="/CESearch.asp?SID=" title="Click here to search for a CE Course.">Continuing Education Course Search</a></td> 
+							<!--	<td BGCOLOR="#b6c9dc"><font size="-1">&nbsp;&nbsp;&nbsp;<a class="main" href="/dbpr/business-and-professions/" title="Click here to apply for a new license."><font face="verdana">Apply for a License</font></a></font></td> -->
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="/viewapps.asp?SID=" title="Click here to view your application status.">View Application Status</a></td>
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="/examSchedule.asp?SID=" title="Click here to find out more information about your examination registration or the results.">Find Exam Information</a></td>
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px;"><a class="main" href="/sto/unlicensedactivity/index.asp?SID=" title="Click here to view unlicensed activity.">Unlicensed Activity Search </a></td>
+							</tr>
+							<tr>
+
+								<td style="height: 20px; background-color: #f7f7f7; font-size:14px; padding:7px 15px 15px 15px;"><a class="main" href="/delinquency_search.asp?SID=" title="Click here to search the Alcoholic Beverages and Tobacco delinquency search">AB&amp;T Delinquent Invoice & Activity List Search</a></td>
+							</tr>
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+														
+							
+							
+							
+							
+							
+							
+							
+														<tr>
+
+								<td BGCOLOR="#f7f7f7"></td>
+							</tr>
+							
+						</table>
+					</td>
+
+				
+					<!--END LEFT NAV-->
+<!--***END TOP INCLULDE FILE***-->
+
+
+<td colspan="2" valign="TOP" width="100%">
+
+<!--START LOGGED IN AS & TIME BAR-->
+		<table cellspacing="0" cellpadding="0" width="97%" border="0">
+			
+			<tr>
+        		<td style="text-align: left; font-size: 15px; font-weight:600; padding: 10px 20px 0 5px; color:#016DDC;">LICENSEE DETAILS</td>
+                               <td style="text-align: right; font-size:12px; padding: 10px 0 0 0;"><font face="arial, helvetica, verdana, sans-serif"><em>6:27:59 PM&nbsp;9/17/2024</em></font></td>
+            </tr>
+		</table>
+	<!--END LOGGED IN AS & TIME BAR-->
+<table cellspacing="0" cellpadding="0" width="98%" border="0">
+		<tr>
+			<td>
+				<table style="margin: 5px;" cellspacing="0" cellpadding="0" border="0" width="98%" align="middle">
+					<tr>
+						<td align="middle">
+						
+						
+<!--************************** INSERT MAIN CONTENT HERE ***************************-->										
+
+<tr>
+	<td>
+		
+		<table cellspacing='0' cellpadding='2' width='100%' border='0'>
+			<tr>
+				
+		
+			</tr>
+		</table>
+		<table cellspacing='0' cellpadding='0' width='100%' border='0' bgcolor=#838383>
+		<tr>
+			<td>
+				<table cellspacing='0' cellpadding='0' width='100%' border='0' bgcolor=#838383>
+					<tr>
+						<td>
+							
+<table cellspacing="0" cellpadding="0" width="100%" border="0" bgcolor="#fff"><tr><td>
+	<table width="100%" border="0" cellspacing="0" cellpadding="3"><tr>
+		<td style="background-color: #fff" width="32%"><font face="arial" size="-1"><b>Licensee Information</b></font></td>
+	</tr></table>
+	<table style="border: 1px solid #BBC2C4;" width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#f7f7f7">
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">Name:</font></td>
+		<td width="48%">
+			<font face="arial" size="-1"><b>SAMPLE, PERSON J&nbsp;<small>(Primary Name)</small></b></font></td>
+    
+	</tr>
+	
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1"></font></td>
+		<td width="48%"><font face="arial" size="-1"><b>OMEGA ROOFING INC&nbsp;<small>(DBA Name)</small></b></font></td>
+	</tr>
+    
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">Main Address:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>1 Sample St<br />SAMPLE CITY&nbsp;&nbsp;FL&nbsp;&nbsp;00000</b></font></td>
+	</tr>
+
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">County:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>Sample</b></font></td>
+	</tr>
+
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">License Mailing:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>1 Sample St<br />SAMPLE CITY&nbsp;&nbsp;FL&nbsp;&nbsp;00000</b></font></td>
+		
+	</tr>
+
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">County:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>Sample</b></font></td>
+	</tr>
+
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">License Location:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>1 Sample St<br />SAMPLE CITY&nbsp;&nbsp; FL&nbsp;&nbsp; 00000</b></font></td>
+		
+	</tr>
+
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">County:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>Sample</b></font></td>
+	</tr>
+
+
+	</table>
+
+</td></tr></table>
+<table border="0" width="100%" bgcolor="#FFFFFF">
+	<tr><td>&nbsp;</td></tr>
+</table>
+<table cellspacing="0" cellpadding="1" width="100%" border="0" bgcolor="#fff"><tr><td>
+	<table width="100%" border="0" cellspacing="0" cellpadding="3"><tr>
+		<td style="background-color: #fff"><font face="arial" size="-1"><b>License Information</b></font></td>
+	</tr></table>
+	<table style="border: 1px solid #BBC2C4;" width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#f7f7f7">
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">License Type:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>Certified Roofing Contractor</b></font></td>
+	</tr>
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">Rank:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>Cert Roofing</b></font></td>
+	</tr>
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">License Number:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>CCC0000009</b></font></td>
+	</tr>
+
+	 
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">Status:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>Current,Active</b></font></td>
+	</tr>
+	 
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">Licensure Date:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>10/25/1996</font></td>
+	</tr>
+	
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1">Expires:</font></td>
+		<td width="68%"><font face="arial" size="-1"><b>08/31/2026</b></font></td>
+	</tr>
+	 
+	</table>
+
+
+<table border="0" width="100%" bgcolor="#ffffff">
+	<tr><td>&nbsp;</td></tr>
+	</table>
+<table cellspacing="0" cellpadding="0" width="100%" border="0" bgcolor="#ffffff"><tr><td>
+	<table width="100%" border="0" cellspacing="0" cellpadding="3"><tr>
+		<td style="background-color: #fff" width="32%" valign="top"><font face="arial" size="-1"><b>Special Qualifications</b></font></td>
+							<td width="68%" valign="top"><font face="arial" size="-1"><b>Qualification Effective</b></font></td>
+							</tr></table>
+	<table style="border: 1px solid #BBC2C4;" width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#f7f7f7">
+						
+						<tr>
+							<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+							<td width="30%"><font face="arial" size="-1"><b>Construction Business</b></font></td>
+							<td width="68%"><font face="arial" size="-1"><b>02/20/2004</b></font></td>
+						</tr>
+						    
+						<tr>
+							<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+							<td width="30%"><font face="arial" size="-1"><b></b></font></td>
+							<td width="68%"><font face="verdana" size="-1"><b></b></font></td>
+						</tr>
+					</table>
+				</td></tr>
+				
+			</table>
+			
+
+
+</td></tr></table>
+
+	 
+
+
+
+<table border="0" width="100%" bgcolor="#FFFFFF">
+	<tr><td>&nbsp;</td></tr>
+</table>
+<table cellspacing="0" cellpadding="1" width="100%" border="0" bgcolor="#fff"><tr><td style="background-color: #fff">
+	<table width="100%" border="0" cellspacing="0" cellpadding="3"><tr>
+<td><font face='arial' size='-1'><b>Alternate Names</b></font></td>
+	<!--	<td><font face="arial" size="-1"><b>Alternate Names</b></font></td> -->
+	</tr></table>
+	<table style="border: 1px solid #BBC2C4;" width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#f7f7f7">
+	<tr>
+		<td width="2%" height="20"><font size="1">&nbsp;</font></td>
+		<td width="30%" valign="top"><font face="arial" size="-1"></font></td>
+		<td width="68%"><table></table></td>
+	</tr>
+</table>
+</td>
+</tr>
+</td></tr></table>
+
+	        <table border="0" width="100%" bgcolor="#FFFFFF">
+	            <tr><td>&nbsp;</td></tr>
+            </table>
+
+
+<br />
+<!--Start Ticket 222127 Related Limited Service Clinics -->
+
+<!--End Ticket 222127 Related Limited Service Clinics -->
+
+<table border="0" width="100%" bgcolor="#FFFFFF">
+<tr>
+	<td><a href="licenseRelation.asp?SID=&licid=0"><font face="arial">View Related License Information</font></a></td>
+</tr>
+</table>
+
+
+<table border="0" width="100%" bgcolor="#FFFFFF">
+<tr>
+	<td><a href="viewcomplaint.asp?SID=&licid=0"><font face="arial">View License Complaint</font></a></td>
+</tr>
+
+
+</table>
+
+
+
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+<br />
+
+		</td>
+	</tr>
+		
+	
+		
+		
+		
+		
+		</td>
+	</tr>
+</table>
+
+
+</center>
+
+
+<!--************************** *    END MAIN CONTENT HERE   ****************************-->
+
+<!--***END MAIN BODY INSERT***-->
+</table></table><tr style="padding: 10px 0;"></tr>
+<!--***START BOTTOM INCLUDE FILE***-->
+<table style="background-color:white; margin-bottom: 20px;">
+<tr>
+    <td style="padding: 15px 0;" colspan="3" align="center";>
+                    <div id="contact" class="contact">
+                        <a style="color: blue; font-weight: 600; font-family: Arial; font-size: 10px;" class="footer" target=_blank href="http://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=1+Sample+St,+SAMPLE+CITY,+FL+00000&sll=0.000000,0.000000&ie=UTF8&hq=&hnear=1+Sample+St,+SAMPLE+CITY,+FL+00000&ll=0.000000,0.000000&z=16">1 Sample St, SAMPLE CITY, FL 00000</a> 
+                        :: Email: <a style="color: blue; font-weight: 600; font-family: Arial; font-size: 10px;" class="footer" href="https://www2.myfloridalicense.com/contact-us/">Customer Contact Center</a> :: Customer Contact Center: 000 000 0000
+                    </div>
+		<!--START DISCLAIMER--> 
+                    <p style="font-size:10px;font-family: Arial; padding: 0 45px 10px 45px; margin: 0; width:auto; text-align: center; color:#3D3D3D">The State of Florida is an AA/EEO employer. Copyright &copy;2023 Department of Business and Professional Regulation - State of Florida.  <a style="color: blue; font-weight: 600; font-size: 10px;" class="footer" href="https://www.dms.myflorida.com/support/privacy_statement">Privacy Statement</a></p>
+                    <p style="font-size:10px; font-weight:400;font-family: Arial; padding: 0 45px 10px 45px; margin: 0; width:auto; text-align: center; color:#3D3D3D;">Under Florida law, email addresses are public records. If you do not want your email address released in response to a public-records request, do not send electronic mail to this entity. Instead, contact the office by phone or by traditional mail. 
+	    If you have any questions, please contact 000 000 0000.  *Pursuant to Section 455.275(1), Florida Statutes, effective October 1, 2012, licensees licensed under Chapter 455, F.S. must provide the Department with an email address if they have one.  
+	    The emails provided may be used for official communication with the licensee.  However email addresses are public record. If you do not wish to supply a personal address, please provide the Department with an email address which can be made available to the public.  
+	    Please see our <a style="color: blue; font-weight: 600; font-family: Arial; font-size: 10px;" class="footer" target=_blank href="http://www.leg.state.fl.us/Statutes/index.cfm?App_mode=Display_Statute&URL=0400-0499/0455/0455ContentsIndex.html&StatuteYear=2021&Title=%2D%3E2021%2D%3EChapter%20455">Chapter 455</a> page to determine if you are affected by this change.</p>
+    </td>
+               
+</table>
+
+
+</body></html><!--***END BOTTOM INCLUDE FILE***-->
