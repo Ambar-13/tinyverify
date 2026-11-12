@@ -1,0 +1,14 @@
+# Secrets: set with `wrangler secret put` in production. Copy to .dev.vars for local runs.
+TINYFISH_API_KEY=replace-with-tinyfish-api-key
+HOOK_SECRET=replace-with-32-byte-hex-secret
+OWN_KEY_SECRET=replace-with-another-32-byte-hex-secret
+ADMIN_KEY=replace-with-admin-key
+API_KEYS=replace-with-comma-separated-api-keys
+
+# Plain settings. The [vars] block in wrangler.toml is their source; .dev.vars only overrides them locally.
+PUBLIC_DAILY_CENTS=100
+JUDGE_DAILY_CENTS=500
+OPS_DAILY_CENTS=200
+CEILING_CENTS=5000
+WALLET_FLOOR_CENTS=300
+BASE_URL=https://replace-after-deploy.workers.dev

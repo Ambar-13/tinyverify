@@ -1,0 +1,37 @@
+{
+  "name": "tinyverify",
+  "version": "0.1.0",
+  "description": "Checks a professional licence or a company registration against the official register, and watches it for changes.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "hono": "^4.13.16",
+    "node-html-parser": "^9.0.6",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.23.0",
+    "@cloudflare/workers-types": "^5.20261104.1",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.157.0"
+  },
+  "overrides": {
+    "@cloudflare/vitest-pool-workers": {
+      "miniflare": "5.20261001.0-alpha"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+name = "tinyverify"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tinyverify"
+database_id = "16e67436-3e8b-45b6-a117-53c1b689ace8"
+migrations_dir = "migrations"
+
+# Every minute: start waiting runs and finish the ones whose webhook never came.
+# 11:00 UTC: watch re-checks. 12:00: registry health checks. 13:00: delete data older than 7 days.
+# src/cron.ts maps each expression to its work.
+[triggers]
+crons = ["* * * * *", "0 11 * * *", "0 12 * * *", "0 13 * * *"]
+
+# Spending limits, in US cents. PUBLIC is shared by callers with no key, JUDGE by callers with an issued
+# key, OPS by the service's own watches and health checks. CEILING is the lifetime limit, and no run
+# starts while the TinyFish wallet is under WALLET_FLOOR.
+[vars]
+PUBLIC_DAILY_CENTS = "100"
+JUDGE_DAILY_CENTS = "500"
+OPS_DAILY_CENTS = "200"
+CEILING_CENTS = "5000"
+WALLET_FLOOR_CENTS = "300"
+BASE_URL = "https://tinyverify.tinyverify.workers.dev"
+# "on" when the TinyFish account can cap a run's steps. Otherwise runs get a time limit.
+AGENT_STEP_CAP = "off"
