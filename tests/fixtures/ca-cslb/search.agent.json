@@ -1,0 +1,26 @@
+{
+  "rows": [
+    {
+      "licence_number": "0000001",
+      "name": "SWIM CARE POOL SERVICES",
+      "name_type": "Primary",
+      "city": "SAMPLE CITY",
+      "status_raw": "Active"
+    },
+    {
+      "licence_number": "0000006",
+      "name": "GREEN WORKS CONSTRUCTION & DESIGN INC",
+      "name_type": "Primary",
+      "city": "SAMPLE CITY",
+      "status_raw": "Active"
+    },
+    {
+      "licence_number": "0000002",
+      "name": "SAMPLE ROOFING CO",
+      "name_type": "DBA",
+      "city": "",
+      "status_raw": "Revoked"
+    }
+  ],
+  "total": 3
+}

@@ -1,0 +1,14 @@
+{
+  "name": "GABRIEL CONSTRUCTION COMPANY",
+  "licence_number": "0000002",
+  "status_raw": "This license is revoked and not able to contract at this time.",
+  "status": "revoked",
+  "expires": "2018-05-16",
+  "issued": "2015-06-05",
+  "licence_type": "B - GENERAL BUILDING CONTRACTOR",
+  "discipline_flag": true,
+  "discipline_actions": [],
+  "data_as_of": "2020-08-28",
+  "city": "SAMPLE CITY",
+  "other_names": []
+}
