@@ -1,0 +1,21 @@
+{
+  "rows": [
+    {
+      "licence_number": "ME000000",
+      "name": "SAMPLE, PERSON A",
+      "profession": "Medical Doctor",
+      "city": "SAMPLE CITY",
+      "status_raw": "Clear/Active",
+      "link_url": "LicenseVerification?LicInd=0&ProCde=0"
+    },
+    {
+      "licence_number": "PS000001",
+      "name": "SAMPLE, PERSON C",
+      "profession": "Pharmacist",
+      "city": "SAMPLE CITY",
+      "status_raw": "Null and Void",
+      "link_url": "https://mqa-internet.doh.state.fl.us/MQASearchServices/HealthCareProviders/LicenseVerification?LicInd=0&Procde=2201"
+    }
+  ],
+  "total": 2
+}

@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "RN000001",
+  "status_raw": "CLEAR/Active",
+  "status": "active",
+  "expires": "2026-04-30",
+  "issued": "1998-08-21",
+  "licence_type": "Registered Nurse",
+  "discipline_flag": false,
+  "discipline_actions": [],
+  "data_as_of": "2024-09-17",
+  "city": "SAMPLE CITY",
+  "other_names": []
+}

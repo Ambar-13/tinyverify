@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "DN000001",
+  "status_raw": "REVOKED/",
+  "status": "revoked",
+  "expires": "2024-02-28",
+  "issued": "2003-07-14",
+  "licence_type": "Dentist",
+  "discipline_flag": true,
+  "discipline_actions": [],
+  "data_as_of": "2025-03-25",
+  "city": null,
+  "other_names": []
+}

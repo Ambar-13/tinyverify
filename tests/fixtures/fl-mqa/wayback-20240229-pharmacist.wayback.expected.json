@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "PS000001",
+  "status_raw": "CLEAR/ACTIVE",
+  "status": "active",
+  "expires": "2025-09-30",
+  "issued": "1985-08-12",
+  "licence_type": "Pharmacist",
+  "discipline_flag": false,
+  "discipline_actions": [],
+  "data_as_of": "2024-02-29",
+  "city": "SAMPLE CITY",
+  "other_names": []
+}

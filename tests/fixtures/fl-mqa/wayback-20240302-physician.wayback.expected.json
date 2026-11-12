@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "ME000001",
+  "status_raw": "DISCP RELINQ/",
+  "status": "surrendered",
+  "expires": "2022-01-31",
+  "issued": "2010-02-16",
+  "licence_type": "Medical Doctor",
+  "discipline_flag": true,
+  "discipline_actions": [],
+  "data_as_of": "2024-03-01",
+  "city": null,
+  "other_names": []
+}

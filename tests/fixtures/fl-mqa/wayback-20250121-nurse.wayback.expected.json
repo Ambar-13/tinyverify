@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "APRN000001",
+  "status_raw": "CLEAR/Active",
+  "status": "active",
+  "expires": "2025-04-30",
+  "issued": "2003-07-16",
+  "licence_type": "Advanced Practice Registered Nurse",
+  "discipline_flag": false,
+  "discipline_actions": [],
+  "data_as_of": "2025-01-21",
+  "city": "SAMPLE CITY",
+  "other_names": []
+}

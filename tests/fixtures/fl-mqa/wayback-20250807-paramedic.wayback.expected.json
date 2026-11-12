@@ -1,0 +1,17 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "PMD000001",
+  "status_raw": "Emerg Suspens/",
+  "status": "suspended",
+  "expires": "2026-12-01",
+  "issued": "2024-08-26",
+  "licence_type": "Paramedic",
+  "discipline_flag": true,
+  "discipline_actions": [
+    "ENFORCEMENT ALERT",
+    "Emergency Suspension Order filed 07/17/2025."
+  ],
+  "data_as_of": "2025-08-07",
+  "city": "SAMPLE CITY",
+  "other_names": []
+}

@@ -1,0 +1,14 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "ME000002",
+  "status_raw": "OBLIGATIONS/ACTIVE",
+  "status": "probation",
+  "expires": "2025-01-31",
+  "issued": "2011-02-25",
+  "licence_type": "Medical Doctor",
+  "discipline_flag": true,
+  "discipline_actions": [],
+  "data_as_of": "2023-08-07",
+  "city": "SAMPLE CITY",
+  "other_names": []
+}

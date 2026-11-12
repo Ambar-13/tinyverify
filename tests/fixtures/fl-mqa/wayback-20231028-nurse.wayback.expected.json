@@ -1,0 +1,17 @@
+{
+  "name": "SAMPLE, PERSON A",
+  "licence_number": "PN000001",
+  "status_raw": "DELINQUENT/",
+  "status": "delinquent",
+  "expires": "2023-07-31",
+  "issued": "2007-06-11",
+  "licence_type": "Licensed Practical Nurse",
+  "discipline_flag": true,
+  "discipline_actions": [
+    "Enforcement Alert",
+    "Emergency Restriction Order filed 08/14/2023."
+  ],
+  "data_as_of": "2023-10-28",
+  "city": null,
+  "other_names": []
+}
