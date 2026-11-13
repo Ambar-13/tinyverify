@@ -609,7 +609,7 @@ describe('GET /', () => {
     expect(css).toMatch(/\.under,\.claim,\.foot,\.mark\{text-shadow:[^}]*var\(--paper\)/);
     expect(css).toMatch(/\.chip\{[^}]*text-shadow:none/);
     const scene = sceneOf(await load());
-    expect(scene).toContain('float rim = layer(uTone, p, .7854, 0, uCell * .34);');
+    expect(scene).toContain('float rim = layer(uTone, p, .7854, 0, uCell * .46);');
     expect(scene.indexOf('col = mix(col, vec3(1., 1., .996), rim);')).toBeLessThan(
       scene.indexOf('vec3(.115, .105, .095), ink);'),
     );
