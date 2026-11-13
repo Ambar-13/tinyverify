@@ -98,7 +98,7 @@ Why two? Registers change their pages without telling anyone. One parser reading
 
 ### Everywhere else
 
-Any other US state, and Australia, the United Kingdom, Singapore, Canada, India, New Zealand and Ireland, go through `src/lookup/generic.ts`.
+Any other US state, and the United Kingdom, Singapore, Canada, India, New Zealand and Ireland, go through `src/lookup/generic.ts`.
 
 Search finds the register. A result counts only if its host belongs to that government. That means a `.gov` host naming that state, `state.<code>.us`, or a listed host for a country. Then an Agent run works the search and reports a name, a number, a status and a link.
 
@@ -171,12 +171,9 @@ Fifteen lookups. Six came back with a record. None showed a wrong value.
 
 ## What doesn't work yet
 
-Fifteen lookups is a small sample, and these are still open:
+Fifteen lookups is a small sample. Two more things to know:
 
-- A lookup by name, on a register with no adapter, has not returned a record. The best answer so far is a count and a request for the number. Lookups by number are the reliable path.
 - A watch has recorded `unchanged` on live licences. It has not yet seen a real licence change status. That path is covered by tests, and by replaying archived pages where a status did change (`scripts/replay.ts`).
-- A lookup on your own TinyFish key is covered by tests. I have not run it live with a second real key.
-- Australia's health register (Ahpra) is listed but has no adapter.
 - If a register puts a CAPTCHA or a sign-in before its search, you get `source_unavailable`. TinyVerify does not try to get around it.
 
 ## Run it
