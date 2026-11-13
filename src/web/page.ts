@@ -133,7 +133,7 @@ input::placeholder{color:#a39a90}
 .narrow input,.panel input{flex:1;width:100%;min-width:0;border:1px solid var(--line);background:var(--card);padding:9px 14px;font-size:15px}
 .narrow input:focus,.panel input:focus{border-color:#bdbdbd}
 .under{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:12px 0 0;text-align:center;font-size:15px;color:var(--muted);min-height:24px}
-.under,.claim,.foot,.mark{text-shadow:-1.5px 0 var(--paper),1.5px 0 var(--paper),0 -1.5px var(--paper),0 1.5px var(--paper),-1px -1px var(--paper),1px 1px var(--paper),-1px 1px var(--paper),1px -1px var(--paper),0 0 6px var(--paper)}
+.under,.claim,.foot,.mark{text-shadow:-2.5px 0 var(--paper),2.5px 0 var(--paper),0 -2.5px var(--paper),0 2.5px var(--paper),-1.8px -1.8px var(--paper),1.8px 1.8px var(--paper),-1.8px 1.8px var(--paper),1.8px -1.8px var(--paper),0 0 8px var(--paper)}
 .chip{border:1px solid var(--line);background:var(--card);padding:7px 12px;font-size:15px;color:var(--ink);text-shadow:none;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:border-color .3s,background .3s}
 .chip:hover,.chip:focus-visible{border-color:#bdbdbd;background:#fafafa}
 #now{color:var(--ink)}
