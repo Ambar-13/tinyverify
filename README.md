@@ -1,5 +1,7 @@
 # TinyVerify
 
+![The TinyVerify demo page](assets/landing.jpg)
+
 You're about to let a contractor take the roof off your house. He says he's licensed, and hands you a card with a number on it.
 
 Somewhere there is an official register that knows if that is true. You would have to find the right board, work its search form, and make sense of the record. Most people don't. They trust the card.
@@ -227,6 +229,7 @@ tests/          run inside the Workers runtime
   fixtures/     saved register pages with personal details replaced
 scripts/        capture a page into a fixture, replay two archived pages
 migrations/     D1 schema
+assets/         the picture above
 ```
 
 ## Licence
