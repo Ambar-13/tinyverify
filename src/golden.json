@@ -1,0 +1,72 @@
+{
+  "_note": "Real public registry records used as daily canaries; business records preferred.",
+  "records": [
+    {
+      "registry": "fl-dbpr",
+      "licence_number": "CCC1335434",
+      "link": "https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=890EB419C7A155357A1D7EC62F952AE7",
+      "expected": {
+        "status": "active",
+        "status_raw": "Current,Active",
+        "licence_number": "CCC1335434",
+        "expires": "2028-08-31"
+      },
+      "note": "Business record."
+    },
+    {
+      "registry": "fl-dbpr",
+      "licence_number": "CBC1260863",
+      "link": "https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=37C3787B48B3AC5752DEFD8582E5E3FA",
+      "expected": {
+        "status": "active",
+        "status_raw": "Current,Active",
+        "licence_number": "CBC1260863",
+        "expires": "2028-08-31"
+      },
+      "note": "SAMPLE CONSTRUCTION, INC. Business record, Certified Building Contractor, licensed since 2016-01-20."
+    },
+    {
+      "registry": "fl-mqa",
+      "licence_number": "ME181008",
+      "link": "https://mqa-internet.doh.state.fl.us/MQASearchServices/HealthCareProviders/LicenseVerification?LicInd=188673&ProCde=1501",
+      "expected": {
+        "status": "active",
+        "status_raw": "Clear/Active",
+        "licence_number": "ME181008",
+        "expires": "2028-01-31"
+      },
+      "note": "Practitioner record."
+    },
+    {
+      "registry": "fl-mqa",
+      "licence_number": "RN9584697",
+      "link": "https://mqa-internet.doh.state.fl.us/MQASearchServices/HealthCareProviders/LicenseVerification?LicInd=732228&ProCde=1701",
+      "expected": {
+        "status": "active",
+        "status_raw": "Clear/Active",
+        "licence_number": "RN9584697",
+        "expires": "2027-04-30"
+      },
+      "note": "Practitioner record, registered nurse."
+    },
+    {
+      "registry": "ca-cslb",
+      "licence_number": "1155041",
+      "link": null,
+      "expected": {
+        "status": "active",
+        "status_raw": "This license is current and active.",
+        "licence_number": "1155041",
+        "expires": "2028-05-31"
+      },
+      "note": "SAMPLE ROOFING LLC. Business record. Agent route, so no link."
+    },
+    {
+      "registry": "au-ahpra",
+      "licence_number": "MED0001166736",
+      "link": null,
+      "pending": true,
+      "note": "Expected values are filled in at day 0, once a person has checked the record."
+    }
+  ]
+}
