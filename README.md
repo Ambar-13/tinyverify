@@ -92,7 +92,7 @@ Every state keeps its own register, and every register has its own search form. 
 
 There are three, in `src/registries/`: Florida health professions (`fl-mqa`), Florida contractors (`fl-dbpr`) and California contractors (`ca-cslb`).
 
-An Agent run works the register's search form. Then the record page is read by two parsers that share no code. One walks the HTML. The other reads the page as lines of text. You get a record only when the two agree. They must match on the status, the licence number, the expiry date and whether discipline is on file.
+An Agent run works the register's search form. Then the record page is read by two parsers that share no parsing code. One walks the HTML. The other reads the page as lines of text. The only thing both use is the table that turns the register's status wording into a plain status. You get a record only when the two agree. They must match on the status, the licence number, the expiry date and whether discipline is on file.
 
 Why two? Registers change their pages without telling anyone. One parser reading the wrong cell hands you a wrong status and sounds sure about it. Two parsers that work differently will disagree instead, and a disagreement comes back as `needs_review`.
 
