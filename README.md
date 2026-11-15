@@ -1,5 +1,7 @@
 # TinyVerify
 
+[![CI](https://github.com/Ambar-13/tinyverify/actions/workflows/ci.yml/badge.svg)](https://github.com/Ambar-13/tinyverify/actions/workflows/ci.yml)
+
 Checks a professional licence or a company registration against the official register, live, and watches it for changes. It is one Cloudflare Worker with a D1 database, built on four TinyFish endpoints: Agent, Fetch, Search and Monitor.
 
 ![The TinyVerify demo page](assets/landing.jpg)
@@ -190,17 +192,17 @@ Fifteen lookups is a small sample. Two more things to know:
 
 ## Run it
 
-You need Node 20 or later, a Cloudflare account and a TinyFish API key.
+You need Node 20 or later. The checks need nothing else:
 
 ```bash
 npm install
-```
-
-```bash
+npm run typecheck
 npm test
 ```
 
-For local runs, copy `.dev.vars.example` to `.dev.vars`, fill it in, and start the Worker:
+There are about 2,000 tests. They run inside the Workers runtime against saved register pages, take around two minutes, and need no account or key. CI runs the same two commands on every push.
+
+To run or deploy the service you also need a Cloudflare account and a TinyFish API key. For local runs, copy `.dev.vars.example` to `.dev.vars`, fill it in, and start the Worker:
 
 ```bash
 npm run dev
