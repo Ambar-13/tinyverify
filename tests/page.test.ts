@@ -12,10 +12,10 @@ const goldenNumber = (registry: string, prefix: string): string =>
   golden.records.find(
     (r) => r.registry === registry && r.licence_number.startsWith(prefix),
   )?.licence_number ?? "";
-// Florida health licences belong to people, so the tests use made-up numbers of the same shape.
+// Florida licences belong to people, so the tests use made-up numbers of the same shape.
 const DOCTOR = "ME000000";
 const NURSE = "RN0000000";
-const CONTRACTOR = goldenNumber("fl-dbpr", "CBC");
+const CONTRACTOR = "CBC0000000";
 const CA_NUMBER = goldenNumber("ca-cslb", "");
 
 async function load(): Promise<string> {
@@ -97,17 +97,22 @@ const at = (y: number, m: number, d: number, h: number, min: number): string =>
   new Date(y, m, d, h, min).toISOString();
 
 describe("the examples", () => {
-  it("are two golden business records, each with its profession and place", () => {
-    const numbers = golden.records.map((r) => r.licence_number);
-    expect(EXAMPLES.map((e) => e.number)).toEqual([CONTRACTOR, CA_NUMBER]);
-    expect(EXAMPLES.map((e) => e.kind)).toEqual(["contractor", "contractor"]);
-    expect(EXAMPLES.map((e) => e.place)).toEqual(["US-FL", "US-CA"]);
-    for (const e of EXAMPLES) expect(numbers).toContain(e.number);
+  it("are one golden record of a company, with its profession and place", () => {
+    expect(EXAMPLES).toEqual([
+      {
+        label: "A contractor in California",
+        number: CA_NUMBER,
+        kind: "contractor",
+        place: "US-CA",
+      },
+    ]);
+    expect(golden.records.map((r) => r.licence_number)).toContain(CA_NUMBER);
   });
 
   it("never include a licence that belongs to a person", () => {
-    expect(golden.records.map((r) => r.registry)).not.toContain("fl-mqa");
-    for (const e of EXAMPLES) expect(e.kind).toBe("contractor");
+    // Both Florida registers issue licences to people, so neither has a committed record or an example.
+    expect(golden.records.map((r) => r.registry)).toEqual(["ca-cslb"]);
+    expect(EXAMPLES.map((e) => e.place)).not.toContain("US-FL");
   });
 });
 
@@ -848,7 +853,7 @@ describe("GET /", () => {
   it("holds the three examples as buttons, not as underlined words", async () => {
     const html = await load();
     expect(html).toContain(
-      '<div class="under" id="eg"><span>Try</span><button type="button" class="chip" id="eg0">A contractor in Florida</button><button type="button" class="chip" id="eg1">A contractor in California</button></div>',
+      '<div class="under" id="eg"><span>Try</span><button type="button" class="chip" id="eg0">A contractor in California</button></div>',
     );
     const css = styleOf(html);
     expect(css).toMatch(
@@ -1323,15 +1328,9 @@ describe("asking a question", () => {
   it("fills the three fields from an example press and checks at once", async () => {
     const page = mount(await load(), noop);
     await page.click("eg0");
-    await page.click("eg1");
     const bodies = page.verifyCalls().map((c) => c.body);
+    expect(bodies).toHaveLength(1);
     expect(bodies[0]).toEqual({
-      record_type: "contractor",
-      jurisdiction: "US-FL",
-      licence_number: CONTRACTOR,
-      include_complaints: true,
-    });
-    expect(bodies[1]).toEqual({
       record_type: "contractor",
       jurisdiction: "US-CA",
       licence_number: CA_NUMBER,

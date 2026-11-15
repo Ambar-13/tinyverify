@@ -2,30 +2,6 @@
   "_note": "Public business records used as canaries. Records of individuals are kept out of the repository: see PRIVATE_GOLDEN.",
   "records": [
     {
-      "registry": "fl-dbpr",
-      "licence_number": "CCC1335434",
-      "link": "https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=890EB419C7A155357A1D7EC62F952AE7",
-      "expected": {
-        "status": "active",
-        "status_raw": "Current,Active",
-        "licence_number": "CCC1335434",
-        "expires": "2028-08-31"
-      },
-      "note": "Business record."
-    },
-    {
-      "registry": "fl-dbpr",
-      "licence_number": "CBC1260863",
-      "link": "https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=37C3787B48B3AC5752DEFD8582E5E3FA",
-      "expected": {
-        "status": "active",
-        "status_raw": "Current,Active",
-        "licence_number": "CBC1260863",
-        "expires": "2028-08-31"
-      },
-      "note": "SAMPLE CONSTRUCTION, INC. Business record, Certified Building Contractor, licensed since 2016-01-20."
-    },
-    {
       "registry": "ca-cslb",
       "licence_number": "1155041",
       "link": null,

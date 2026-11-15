@@ -18,8 +18,8 @@ import {
 
 const db = env.DB;
 
-// Florida health licences belong to people, so none is committed. The service reads its fl-mqa canary records
-// from the PRIVATE_GOLDEN secret. These two are made up, and the scrubbed sample page reads exactly as the first.
+// Florida licences belong to people, so none is committed. The service reads its Florida canary records from the
+// PRIVATE_GOLDEN secret. These two are made up, and the scrubbed sample page reads exactly as the first.
 const MQA_LINK =
   "https://mqa-internet.doh.state.fl.us/MQASearchServices/HealthCareProviders/LicenseVerification";
 const MQA_EXPECTED = {
@@ -209,11 +209,7 @@ describe("golden records", () => {
     expect(golden._note).toContain(
       "Records of individuals are kept out of the repository",
     );
-    expect(golden.records.map((r) => r.registry)).toEqual([
-      "fl-dbpr",
-      "fl-dbpr",
-      "ca-cslb",
-    ]);
+    expect(golden.records.map((r) => r.registry)).toEqual(["ca-cslb"]);
 
     for (const record of golden.records) {
       expect(
@@ -221,9 +217,6 @@ describe("golden records", () => {
         record.licence_number,
       ).toEqual(["expires", "licence_number", "status", "status_raw"]);
     }
-
-    const dbpr = golden.records.find((r) => r.registry === "fl-dbpr");
-    expect(dbpr?.licence_number).toBe("CCC1335434");
 
     const cslb = golden.records.find((r) => r.registry === "ca-cslb");
     expect(cslb?.licence_number).toBe("1155041");
@@ -233,8 +226,11 @@ describe("golden records", () => {
 
 describe("records kept in PRIVATE_GOLDEN", () => {
   it("gives a registry no canary row when it has no record, committed or private", async () => {
-    await runAll(env, db, fetchClient(MQA_OK), EVEN_DAY);
+    // A local .dev.vars may set the secret, so it is taken out here.
+    const noSecret = { ...env, PRIVATE_GOLDEN: undefined };
+    await runAll(noSecret, db, fetchClient(MQA_OK), EVEN_DAY);
     expect(await latestFor("fl-mqa")).toBeUndefined();
+    expect(await latestFor("fl-dbpr")).toBeUndefined();
   });
 
   it("skips the secret when it is not valid JSON, and still checks the committed records", async () => {
@@ -245,7 +241,10 @@ describe("records kept in PRIVATE_GOLDEN", () => {
       EVEN_DAY,
     );
     expect(await latestFor("fl-mqa")).toBeUndefined();
-    expect(await latestFor("fl-dbpr")).toBeDefined();
+    const jobs = await queuedJobs();
+    expect(jobs.map((j) => JSON.parse(j.payload_json).registry)).toEqual([
+      "ca-cslb",
+    ]);
   });
 });
 

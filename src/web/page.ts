@@ -18,8 +18,9 @@ import { SCENE_SOURCE } from "./scene";
 import "../registries/index";
 
 /**
- * The example presses check golden records (src/golden.json), found by registry and leading letters. They are
- * business records, so the page never puts a person's licence in front of a visitor who did not ask for it.
+ * The example press checks a golden record (src/golden.json), found by registry and leading letters. It is a
+ * company's record, so the page never puts a person's licence in front of a visitor who did not ask for it.
+ * Florida issues a contractor licence to a person, which is why no Florida record is an example.
  */
 const goldenNumber = (registry: string, prefix: string): string => {
   const found = golden.records.find(
@@ -38,12 +39,6 @@ export const EXAMPLES: {
   kind: RecordType;
   place: Jurisdiction;
 }[] = [
-  {
-    label: "A contractor in Florida",
-    number: goldenNumber("fl-dbpr", "CBC"),
-    kind: "contractor",
-    place: "US-FL",
-  },
   {
     label: "A contractor in California",
     number: goldenNumber("ca-cslb", ""),
