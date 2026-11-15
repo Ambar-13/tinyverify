@@ -66,7 +66,7 @@
       "licence_number": "MED0000000000",
       "link": null,
       "pending": true,
-      "note": "Expected values are filled in at day 0, once a person has checked the record."
+      "note": "Not checked by hand yet, so the canary skips this record."
     }
   ]
 }
