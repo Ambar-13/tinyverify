@@ -169,11 +169,21 @@ Tests only prove it can read the pages I saved. So I pointed it at registers it 
 
 Fifteen lookups. Six came back with a record. None showed a wrong value.
 
+I can't make a real licence change status while you watch. So I ran the comparison a watch uses on archived copies of three real California contractor licences, saved by the Wayback Machine before and after each one changed:
+
+| Captures                    | What the comparison reported                                        |
+| --------------------------- | ------------------------------------------------------------------- |
+| 21 Oct 2020 and 16 Jan 2021 | `status: active -> suspended`                                       |
+| 29 Apr 2023 and 21 Jul 2023 | `status: suspended -> active`, `expires: 2023-05-31 -> 2025-05-31`  |
+| 23 Nov 2020 and 25 Nov 2020 | `status: expired -> revoked`, `expires: 2019-11-30 -> 2020-11-23`   |
+
+`scripts/replay.ts` does this for any two Wayback captures of one licence page.
+
 ## What doesn't work yet
 
 Fifteen lookups is a small sample. Two more things to know:
 
-- A watch has recorded `unchanged` on live licences. It has not yet seen a real licence change status. That path is covered by tests, and by replaying archived pages where a status did change (`scripts/replay.ts`).
+- A watch has recorded `unchanged` on live licences every day. It has not yet seen a live licence change status. The archived changes above are the evidence so far.
 - If a register puts a CAPTCHA or a sign-in before its search, you get `source_unavailable`. TinyVerify does not try to get around it.
 
 ## Run it
