@@ -1,5 +1,5 @@
 {
-  "_note": "Real public registry records used as daily canaries; business records preferred.",
+  "_note": "Public business records used as canaries. Records of individuals are kept out of the repository: see PRIVATE_GOLDEN.",
   "records": [
     {
       "registry": "fl-dbpr",
@@ -26,30 +26,6 @@
       "note": "SAMPLE CONSTRUCTION, INC. Business record, Certified Building Contractor, licensed since 2016-01-20."
     },
     {
-      "registry": "fl-mqa",
-      "licence_number": "ME000000",
-      "link": "https://mqa-internet.doh.state.fl.us/MQASearchServices/HealthCareProviders/LicenseVerification?LicInd=1&ProCde=1501",
-      "expected": {
-        "status": "active",
-        "status_raw": "Clear/Active",
-        "licence_number": "ME000000",
-        "expires": "2028-01-31"
-      },
-      "note": "Practitioner record."
-    },
-    {
-      "registry": "fl-mqa",
-      "licence_number": "RN0000000",
-      "link": "https://mqa-internet.doh.state.fl.us/MQASearchServices/HealthCareProviders/LicenseVerification?LicInd=2&ProCde=1701",
-      "expected": {
-        "status": "active",
-        "status_raw": "Clear/Active",
-        "licence_number": "RN0000000",
-        "expires": "2027-04-30"
-      },
-      "note": "Practitioner record, registered nurse."
-    },
-    {
       "registry": "ca-cslb",
       "licence_number": "1155041",
       "link": null,
@@ -60,13 +36,6 @@
         "expires": "2028-05-31"
       },
       "note": "SAMPLE ROOFING LLC. Business record. Agent route, so no link."
-    },
-    {
-      "registry": "au-ahpra",
-      "licence_number": "MED0000000000",
-      "link": null,
-      "pending": true,
-      "note": "Not checked by hand yet, so the canary skips this record."
     }
   ]
 }

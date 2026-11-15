@@ -7,6 +7,8 @@ export type Env = {
   /** Seals a visitor's own TinyFish key while their lookup runs. Unset means that option is switched off. */
   OWN_KEY_SECRET?: string;
   ADMIN_KEY: string;
+  /** Extra canary records kept out of the repository, as a JSON array. Unset means there are none. */
+  PRIVATE_GOLDEN?: string;
   API_KEYS: string;
   PUBLIC_DAILY_CENTS: string;
   JUDGE_DAILY_CENTS: string;
