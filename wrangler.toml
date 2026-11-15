@@ -19,7 +19,7 @@ crons = ["* * * * *", "0 11 * * *", "0 12 * * *", "0 13 * * *"]
 # key, OPS by the service's own watches and health checks. CEILING is the lifetime limit, and no run
 # starts while the TinyFish wallet is under WALLET_FLOOR.
 [vars]
-PUBLIC_DAILY_CENTS = "100"
+PUBLIC_DAILY_CENTS = "400"
 JUDGE_DAILY_CENTS = "500"
 OPS_DAILY_CENTS = "200"
 CEILING_CENTS = "5000"

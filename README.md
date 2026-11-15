@@ -142,7 +142,7 @@ Everything the demo page does, you can do with `curl`.
 
 A lookup by number on a Florida register takes seconds. A name search, or a place with no adapter, takes one to three minutes.
 
-The demo is free, so it has limits. Without a key, one address can start 20 live lookups an hour, and all visitors share US$1 a day. When that is spent, lookups return `source_unavailable` until midnight UTC.
+The demo is free, so it has limits. Without a key, one address can start 20 live lookups an hour, and all visitors share US$4 a day. When that is spent, lookups return `source_unavailable` until midnight UTC.
 
 You can skip the shared budget by sending your own TinyFish key in an `X-TinyFish-Key` header. The lookup then runs on your account. The key is used for that one lookup, kept encrypted until the lookup has an answer, then deleted. It is never logged or returned.
 
