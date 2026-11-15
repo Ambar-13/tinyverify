@@ -1,5 +1,7 @@
 # TinyVerify
 
+Checks a professional licence or a company registration against the official register, live, and watches it for changes. It is one Cloudflare Worker with a D1 database, built on four TinyFish endpoints: Agent, Fetch, Search and Monitor.
+
 ![The TinyVerify demo page](assets/landing.jpg)
 
 You're about to let a contractor take the roof off your house. He says he's licensed, and hands you a card with a number on it.
@@ -12,7 +14,7 @@ It works for doctors, nurses, dentists, pharmacists, contractors and companies.
 
 Try it: https://tinyverify.tinyverify.workers.dev
 
-I built this for TinyFish's Student Bounty Drop 002. It is one Cloudflare Worker with a D1 database, and it uses four TinyFish endpoints: Agent, Fetch, Search and Monitor.
+I built this for TinyFish's Student Bounty Drop 002.
 
 ## The one rule
 
@@ -28,43 +30,43 @@ The agent's answer is never passed through. The run captures the pages it saw, c
 
 ## Quick start
 
-Start a check. The names and numbers in these examples are made up.
+Start a check. This is a California roofing company's licence, the same public record the demo's example uses.
 
 ```bash
 curl -s https://tinyverify.tinyverify.workers.dev/verify \
   -H 'content-type: application/json' \
-  -d '{"record_type":"physician","jurisdiction":"US-FL","licence_number":"ME000000"}'
+  -d '{"record_type":"contractor","jurisdiction":"US-CA","licence_number":"1155041"}'
 ```
 
-The reply has a `check_id` and a `state`. Read the check until the state is `done`:
+The reply has a `check_id` and a `state`. A live lookup starts an Agent run, so it takes one to three minutes. Read the check with that id until the state is `done`:
 
 ```bash
-curl -s https://tinyverify.tinyverify.workers.dev/verify/chk_00000000-0000-0000-0000-000000000000
+curl -s https://tinyverify.tinyverify.workers.dev/verify/$CHECK_ID
 ```
 
-A finished match, shortened:
+A finished match, shortened, with the company's name left out:
 
 ```json
 {
-  "check_id": "chk_00000000-0000-0000-0000-000000000000",
+  "check_id": "chk_...",
   "state": "done",
   "outcome": "match",
-  "checked_at": "2026-11-10T09:00:00Z",
+  "checked_at": "2026-11-14T16:07:22.411Z",
   "records": [
     {
-      "registry": { "id": "fl-mqa", "name": "Florida Department of Health, MQA licence verification" },
-      "source_url": "https://mqa-internet.doh.state.fl.us/...",
-      "subject": { "name": "DANA EXAMPLE", "kind": "person", "city": "TAMPA" },
+      "registry": { "id": "ca-cslb", "name": "California Contractors State License Board" },
+      "source_url": "https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/CheckLicense.aspx",
+      "subject": { "name": "...", "city": "SAN JOSE" },
       "licence": {
-        "type": "Medical Doctor",
+        "type": "C39 - ROOFING",
         "status": "active",
-        "status_raw": "CLEAR/ACTIVE",
-        "issued": "2011-06-01",
-        "expires": "2028-01-31"
+        "status_raw": "This license is current and active.",
+        "issued": "2026-05-12",
+        "expires": "2028-05-31"
       },
       "discipline": { "checked": true, "on_file": false, "actions": [] },
       "verification": { "readers": ["parser_html", "parser_text"], "agree": true },
-      "evidence": { "quotes": ["License Status CLEAR/ACTIVE"], "snapshot_id": "snp_...", "content_sha256": "..." }
+      "evidence": { "quotes": ["This license is current and active."], "snapshot_id": "snp_...", "content_sha256": "..." }
     }
   ]
 }
@@ -125,7 +127,7 @@ Each adapter is also checked on a schedule against a known public record (`src/w
 
 Everything the demo page does, you can do with `curl`.
 
-| Route                                   |                                                                                     |
+| Route                                   | What it does                                                                        |
 | --------------------------------------- | ----------------------------------------------------------------------------------- |
 | `POST /verify`                          | Start a check, or choose one of several matches with `check_id` and `candidate_id`. |
 | `GET /verify/:id`                       | Read a check. Poll every 3 seconds until `state` is `done`.                         |
