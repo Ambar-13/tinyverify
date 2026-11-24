@@ -31,6 +31,12 @@ export default defineConfig(async () => {
     ],
     test: {
       setupFiles: ['./tests/setup.ts'],
+      coverage: {
+        provider: 'istanbul' as const,
+        include: ['src/**/*.ts'],
+        reporter: ['text-summary' as const],
+        thresholds: { statements: 90, branches: 80, functions: 95, lines: 90 },
+      },
     },
   };
 });

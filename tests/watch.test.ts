@@ -109,7 +109,14 @@ function stubClient() {
     runAsync: vi.fn(),
     getRun: vi.fn(),
   };
-  return { client: client as unknown as TinyFish, createMonitor, deleteMonitor, setMonitorSchedule, stepHtml, fetchPages };
+  return {
+    client: client as unknown as TinyFish,
+    createMonitor,
+    deleteMonitor,
+    setMonitorSchedule,
+    stepHtml,
+    fetchPages,
+  };
 }
 
 // The contractor board's complaint view as the two readers take it: a header row, then one row per complaint,
@@ -2087,7 +2094,12 @@ describe('discipline that has not been read yet', () => {
       run({
         steps: WITH_RECORD,
         result: {
-          complaints: rows.map((case_number) => ({ case_number, status: 'Closed', date: '04/11/2025', description: 'x' })),
+          complaints: rows.map((case_number) => ({
+            case_number,
+            status: 'Closed',
+            date: '04/11/2025',
+            description: 'x',
+          })),
           complaint_view_opened: true,
         },
       }),

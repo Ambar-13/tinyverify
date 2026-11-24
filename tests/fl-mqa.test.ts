@@ -137,7 +137,7 @@ describe('status table', () => {
   });
 
   it('gives every fixture page the status its expected json records', () => {
-    for (const [path, html] of Object.entries(pages)) {
+    for (const path of Object.keys(pages)) {
       const name = path.replace('./fixtures/fl-mqa/', '').replace(/\.html$/, '');
       const expected = expectedFiles[`./fixtures/fl-mqa/${name}.expected.json`];
       expect(statusFor('fl-mqa', expected.status_raw ?? ''), name).toBe(expected.status);

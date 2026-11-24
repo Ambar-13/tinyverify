@@ -4,6 +4,8 @@ import { beforeEach } from 'vitest';
 import type { Env as AppEnv } from '../src/env';
 
 declare global {
+  // The Workers test pool reads the type of `env` from this namespace, so it cannot be a module.
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cloudflare {
     interface Env extends AppEnv {
       TEST_MIGRATIONS: D1Migration[];

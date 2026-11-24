@@ -789,7 +789,7 @@ describe('retry cap', () => {
       prepare(sql: string) {
         if (!sql.startsWith("UPDATE queue SET state = 'running'") || thrown) return db.prepare(sql);
         return {
-          bind: (...args: unknown[]) => ({
+          bind: (..._args: unknown[]) => ({
             run: async () => {
               thrown = true;
               throw new Error('store unavailable');

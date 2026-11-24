@@ -68,7 +68,7 @@ A finished match, shortened, with the company's name left out:
       },
       "discipline": { "checked": true, "on_file": false, "actions": [] },
       "verification": { "readers": ["parser_html", "parser_text"], "agree": true },
-      "evidence": { "quotes": ["This license is current and active."], "snapshot_id": "snp_...", "content_sha256": "..." }
+      "evidence": { "quotes": ["This license is current and active."], "snapshot_id": "snap_...", "content_sha256": "..." }
     }
   ]
 }
@@ -196,11 +196,15 @@ You need Node 20 or later. The checks need nothing else:
 
 ```bash
 npm install
+npm run format
+npm run lint
 npm run typecheck
-npm test
+npm run coverage
 ```
 
-There are about 2,000 tests. They run inside the Workers runtime against saved register pages, take around two minutes, and need no account or key. CI runs the same two commands on every push.
+There are about 2,000 tests. They run inside the Workers runtime against saved register pages, take around two minutes, and need no account or key. They cover 94% of the lines in `src/` and 84% of its branches, and the run fails if that drops below 90% and 80%. CI runs the same four commands on Node 20, 22 and 24 on every push.
+
+`package.json` pins miniflare, the local Workers runtime the tests run in. The build that the test pool ships with stops at an older compatibility date than the one in `wrangler.toml`, and the runtime will not start a Worker dated after it.
 
 To run or deploy the service you also need a Cloudflare account and a TinyFish API key. For local runs, copy `.dev.vars.example` to `.dev.vars`, fill it in, and start the Worker:
 

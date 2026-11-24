@@ -8,14 +8,14 @@
  * is.
  */
 
-import { Hono } from "hono";
-import golden from "../golden.json";
-import { COUNTRY_NAMES, STATE_NAMES } from "../lookup/places";
-import { registries } from "../registries/catalog";
-import type { Jurisdiction, RecordType, RegistryId } from "../types";
-import { SCENE_SOURCE } from "./scene";
+import { Hono } from 'hono';
+import golden from '../golden.json';
+import { COUNTRY_NAMES, STATE_NAMES } from '../lookup/places';
+import { registries } from '../registries/catalog';
+import type { Jurisdiction, RecordType, RegistryId } from '../types';
+import { SCENE_SOURCE } from './scene';
 // Loading the adapters is what tells the support table which registries are connected.
-import "../registries/index";
+import '../registries/index';
 
 /**
  * The example press checks a golden record (src/golden.json), found by registry and leading letters. It is a
@@ -23,13 +23,8 @@ import "../registries/index";
  * Florida issues a contractor licence to a person, which is why no Florida record is an example.
  */
 const goldenNumber = (registry: string, prefix: string): string => {
-  const found = golden.records.find(
-    (r) => r.registry === registry && r.licence_number.startsWith(prefix),
-  );
-  if (!found)
-    throw new Error(
-      `src/golden.json has no ${registry} record starting ${prefix}`,
-    );
+  const found = golden.records.find((r) => r.registry === registry && r.licence_number.startsWith(prefix));
+  if (!found) throw new Error(`src/golden.json has no ${registry} record starting ${prefix}`);
   return found.licence_number;
 };
 
@@ -40,63 +35,56 @@ export const EXAMPLES: {
   place: Jurisdiction;
 }[] = [
   {
-    label: "A contractor in California",
-    number: goldenNumber("ca-cslb", ""),
-    kind: "contractor",
-    place: "US-CA",
+    label: 'A contractor in California',
+    number: goldenNumber('ca-cslb', ''),
+    kind: 'contractor',
+    place: 'US-CA',
   },
 ];
 
 const KIND_LABELS: Record<RecordType, string> = {
-  physician: "Doctor",
-  nurse: "Nurse",
-  dentist: "Dentist",
-  pharmacist: "Pharmacist",
-  contractor: "Contractor",
-  company: "Company",
+  physician: 'Doctor',
+  nurse: 'Nurse',
+  dentist: 'Dentist',
+  pharmacist: 'Pharmacist',
+  contractor: 'Contractor',
+  company: 'Company',
 };
-const KIND_ORDER: RecordType[] = [
-  "physician",
-  "nurse",
-  "dentist",
-  "pharmacist",
-  "contractor",
-  "company",
-];
+const KIND_ORDER: RecordType[] = ['physician', 'nurse', 'dentist', 'pharmacist', 'contractor', 'company'];
 
 const PLACE_LABELS: Record<Jurisdiction, string> = {
-  "US-FL": "Florida",
-  "US-CA": "California",
-  AU: "Australia",
+  'US-FL': 'Florida',
+  'US-CA': 'California',
+  AU: 'Australia',
 };
 
 /** How a visitor hears about each registry: the board that runs it, and what its licences are called. */
 const PLAIN: Record<RegistryId, { board: string; licence: string }> = {
-  "fl-mqa": {
+  'fl-mqa': {
     board: "Florida's health board",
-    licence: "Florida health licence",
+    licence: 'Florida health licence',
   },
-  "fl-dbpr": {
+  'fl-dbpr': {
     board: "Florida's contractor board",
-    licence: "Florida contractor licence",
+    licence: 'Florida contractor licence',
   },
-  "ca-cslb": {
+  'ca-cslb': {
     board: "California's contractor board",
-    licence: "California contractor licence",
+    licence: 'California contractor licence',
   },
-  "au-ahpra": {
+  'au-ahpra': {
     board: "Australia's health board",
-    licence: "Australian health licence",
+    licence: 'Australian health licence',
   },
 };
 
 const esc = (text: string): string =>
   text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const connected = () => registries.filter((r) => r.connected);
 
@@ -123,14 +111,8 @@ export function listedPlaces(): {
   states: { value: string; label: string }[];
   countries: string[];
 } {
-  const own = new Map<string, Jurisdiction>(
-    connected().map((r) => [PLACE_LABELS[r.jurisdiction], r.jurisdiction]),
-  );
-  const waiting = new Set(
-    registries
-      .filter((r) => !r.connected)
-      .map((r) => PLACE_LABELS[r.jurisdiction]),
-  );
+  const own = new Map<string, Jurisdiction>(connected().map((r) => [PLACE_LABELS[r.jurisdiction], r.jurisdiction]));
+  const waiting = new Set(registries.filter((r) => !r.connected).map((r) => PLACE_LABELS[r.jurisdiction]));
   const rest = STATE_NAMES.filter((name) => !own.has(name)).map((name) => ({
     value: name,
     label: name,
@@ -248,38 +230,34 @@ figcaption{color:var(--muted)}
 .choice{padding:10px 12px;margin-top:8px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-`.replace(/\n/g, "");
+`.replace(/\n/g, '');
 
 const ARROW =
   '<svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6h13m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const CROSS =
   '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
-const option = (value: string, label: string): string =>
-  `<option value="${esc(value)}">${esc(label)}</option>`;
+const option = (value: string, label: string): string => `<option value="${esc(value)}">${esc(label)}</option>`;
 
 function placeOptions(): string {
   const { states, countries } = listedPlaces();
   const group = (label: string, options: string[]): string =>
-    `<optgroup label="${label}">${options.join("")}</optgroup>`;
+    `<optgroup label="${label}">${options.join('')}</optgroup>`;
   return (
     group(
-      "United States",
+      'United States',
       states.map((s) => option(s.value, s.label)),
     ) +
     group(
-      "Other countries",
+      'Other countries',
       countries.map((name) => option(name, name)),
     )
   );
 }
 
 function exampleLine(): string {
-  const chips = EXAMPLES.map(
-    (e, i) =>
-      `<button type="button" class="chip" id="eg${i}">${esc(e.label)}</button>`,
-  );
-  return `<span>Try</span>${chips.join("")}`;
+  const chips = EXAMPLES.map((e, i) => `<button type="button" class="chip" id="eg${i}">${esc(e.label)}</button>`);
+  return `<span>Try</span>${chips.join('')}`;
 }
 
 const bodyHtml = (): string => `
@@ -292,7 +270,7 @@ const bodyHtml = (): string => `
 <div class="ask ui rise" id="ask">
 <form class="bar" id="lookup" novalidate>
 <label class="q"><span>Name or licence number</span><input id="q" type="text" placeholder="Alex Morgan" autocomplete="off" spellcheck="false"></label>
-<label class="prof"><span>Who or what</span><select id="kind">${KIND_ORDER.map((k) => option(k, KIND_LABELS[k])).join("")}</select></label>
+<label class="prof"><span>Who or what</span><select id="kind">${KIND_ORDER.map((k) => option(k, KIND_LABELS[k])).join('')}</select></label>
 <label class="place"><span>Place</span><select id="place">${placeOptions()}</select></label>
 <button class="go" id="go" type="submit"><span id="go-label">Check</span>${ARROW}</button>
 </form>
@@ -1071,24 +1049,22 @@ const UI_SOURCE = String.raw`
 `;
 
 /** A "</" inside a JSON string would end the script early, so "<" is escaped. */
-const json = (value: unknown): string =>
-  JSON.stringify(value).replace(/</g, "\\u003c");
+const json = (value: unknown): string => JSON.stringify(value).replace(/</g, '\\u003c');
 
 /** Indentation and whole-line comments are dropped from what is served; the source files keep them. */
 const squeeze = (code: string): string =>
   code
-    .replace(/^\s*\/\/.*\n/gm, "")
-    .replace(/^[ \t]+/gm, "")
-    .replace(/\n{2,}/g, "\n");
+    .replace(/^\s*\/\/.*\n/gm, '')
+    .replace(/^[ \t]+/gm, '')
+    .replace(/\n{2,}/g, '\n');
 
-const examplesForScript = () =>
-  EXAMPLES.map(({ number, kind, place }) => ({ number, kind, place }));
+const examplesForScript = () => EXAMPLES.map(({ number, kind, place }) => ({ number, kind, place }));
 
 const script = (): string =>
   `var F = ${json(scriptFacts())};\nvar EXAMPLES = ${json(examplesForScript())};\n${squeeze(PURE_SOURCE + UI_SOURCE)}`;
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600&display=swap";
+  'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600&display=swap';
 
 const renderPage = (): string => `<!doctype html>
 <html lang="en">
@@ -1113,4 +1089,4 @@ ${bodyHtml()}
 
 export const pageApp = new Hono();
 
-pageApp.get("/", (c) => c.html(renderPage()));
+pageApp.get('/', (c) => c.html(renderPage()));
