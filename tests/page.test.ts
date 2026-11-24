@@ -945,7 +945,7 @@ describe("GET /", () => {
   it("holds one side panel with three views, and one key field in it", async () => {
     const html = await load();
     for (const text of [
-      "Each licence here is read again every day. A change of status is recorded.",
+      "Each licence here is read again every week. A change of status is recorded.",
       "each check is charged to your TinyFish account, usually 10 to 60 cents",
       "Any other US state or country has no line here. Its registry is found and read at the time of each check.",
     ]) {
@@ -2030,7 +2030,7 @@ describe("keeping a watch", () => {
     expect(keyField(page).parent?.hidden).toBe(true);
     await page.press("Watch this licence");
     expect(page.text("card")).toContain(
-      "Watching checks the official record every day and records what changed. It costs money to run, so it needs a key. Ask the owner of this service for one.",
+      "Watching reads the official record again on a schedule and records what changed. It costs money to run, so it needs a key. Ask the owner of this service for one.",
     );
     expect(keyField(page).parent?.hidden).toBe(false);
     expect(page.doc.focused).toBe(keyField(page));
@@ -2054,7 +2054,7 @@ describe("keeping a watch", () => {
       kind: "record",
     });
     expect(page.text("card")).toContain(
-      "Watching started. It checks this licence every day.",
+      "Watching started. It checks this licence every week.",
     );
     expect(keyField(page).parent?.hidden).toBe(true);
     expect(page.el("card").byText("Check it now").parent?.hidden).toBe(false);

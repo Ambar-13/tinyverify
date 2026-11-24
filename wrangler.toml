@@ -9,8 +9,9 @@ database_name = "tinyverify"
 database_id = "16e67436-3e8b-45b6-a117-53c1b689ace8"
 migrations_dir = "migrations"
 
-# Every minute: start waiting runs and finish the ones whose webhook never came.
-# 11:00 UTC: watch re-checks. 12:00: registry health checks. 13:00: delete data older than 7 days.
+# Every minute: start waiting runs, finish the ones whose webhook never came, and move any Monitor
+# still on an old schedule. 11:00 UTC: watch re-checks. 12:00: registry health checks (the one that
+# needs an agent run on Mondays only). 13:00: delete data older than 7 days.
 # src/cron.ts maps each expression to its work.
 [triggers]
 crons = ["* * * * *", "0 11 * * *", "0 12 * * *", "0 13 * * *"]

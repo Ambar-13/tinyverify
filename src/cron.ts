@@ -6,7 +6,7 @@ import { dispatch, pollOwnRuns, sweep } from './queue/queue';
 import { purgeOlderThan } from './store';
 import { clientFor } from './tinyfish/service-client';
 import { runAll } from './watch/canary';
-import { enqueueRechecks } from './watch/watch';
+import { alignMonitorSchedules, enqueueRechecks } from './watch/watch';
 
 const DAY_MS = 86_400_000;
 
@@ -20,6 +20,7 @@ export async function runCron(cron: string, env: Env, now: Date = new Date()): P
       await step('sweep', () => sweep(env, db, client));
       await step('pollOwnRuns', () => pollOwnRuns(env, db, client));
       await step('dropStaleOwnKeys', () => dropStaleOwnKeys(db, now));
+      await step('alignMonitorSchedules', () => alignMonitorSchedules(db, client));
       return;
     case '0 11 * * *':
       await step('enqueueRechecks', () => enqueueRechecks(env, db, now));

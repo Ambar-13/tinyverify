@@ -307,7 +307,7 @@ const bodyHtml = (): string => `
 <header><h2 id="panelTitle">Watched licences</h2><button class="x" id="panelClose" type="button" aria-label="Close">${CROSS}</button></header>
 <div class="scroll">
 <div id="view-watch">
-<p class="sub">Each licence here is read again every day. A change of status is recorded.</p>
+<p class="sub">Each licence here is read again every week. A change of status is recorded.</p>
 <div id="watched"><p class="small">Loading the watched licences.</p></div>
 <div class="sec"><button type="button" class="btn" id="statusBtn">Is everything answering?</button></div>
 </div>
@@ -974,7 +974,7 @@ const UI_SOURCE = String.raw`
 
   // ---- watching the licence on the card
 
-  var WATCH_NEEDS_KEY = 'Watching checks the official record every day and records what changed. It costs money to run, so it needs a key. Ask the owner of this service for one.';
+  var WATCH_NEEDS_KEY = 'Watching reads the official record again on a schedule and records what changed. It costs money to run, so it needs a key. Ask the owner of this service for one.';
 
   function reason(res, fallback) {
     var e = res.data && res.data.error;
@@ -1011,7 +1011,7 @@ const UI_SOURCE = String.raw`
         }
         watchId = res.data.watch_id;
         controls.hidden = false;
-        tell(res.data.pending ? 'Watching started. The record link is still being found.' : 'Watching started. It checks this licence every day.');
+        tell(res.data.pending ? 'Watching started. The record link is still being found.' : 'Watching started. It checks this licence every ' + (res.data.tier === 'recheck' ? 'day' : 'week') + '.');
       }, function () { tell(NETWORK); });
     }
 

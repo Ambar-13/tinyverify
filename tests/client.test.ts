@@ -298,6 +298,17 @@ describe('TinyFish client', () => {
     expect(out).toEqual(payload);
   });
 
+  it('setMonitorSchedule sends PATCH with the schedule alone', async () => {
+    const { tf, calls } = client(json({ id: 'mon_1', schedule_cron: '0 6 * * 1' }));
+
+    await expect(tf.setMonitorSchedule('mon_1', '0 6 * * 1')).resolves.toBeUndefined();
+
+    expect(calls[0].url).toBe('https://agent.tinyfish.ai/v1/monitors/mon_1');
+    expect(calls[0].init.method).toBe('PATCH');
+    expect(new Headers(calls[0].init.headers).get('X-API-Key')).toBe(KEY);
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({ schedule_cron: '0 6 * * 1' });
+  });
+
   it('deleteMonitor sends DELETE and resolves on 204', async () => {
     const { tf, calls } = client(new Response(null, { status: 204 }));
 

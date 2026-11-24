@@ -52,6 +52,8 @@ export interface WatchRow extends WatchInput {
   last_recheck_at: string | null;
   /** When a DBPR complaint run was last queued for this watch. Null until the first one. */
   last_complaints_at: string | null;
+  /** The schedule the watch's Monitor was last given. Null with no Monitor, or one made before this was kept. */
+  monitor_schedule: string | null;
 }
 
 export type EventInput = Omit<Event, 'event_id' | 'created_at'>;

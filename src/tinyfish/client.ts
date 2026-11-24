@@ -166,6 +166,11 @@ export class TinyFish {
     return this.json(await this.send(`${AGENT_URL}/v1/monitors`, { method: 'POST', body: req, long: true }));
   }
 
+  /** Moves a Monitor to another schedule. Its page, purpose and webhook stay as they are. */
+  async setMonitorSchedule(id: string, schedule_cron: string): Promise<void> {
+    await this.send(`${AGENT_URL}/v1/monitors/${encodeURIComponent(id)}`, { method: 'PATCH', body: { schedule_cron } });
+  }
+
   async deleteMonitor(id: string): Promise<void> {
     await this.send(`${AGENT_URL}/v1/monitors/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }

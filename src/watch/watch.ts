@@ -51,7 +51,8 @@ import {
 import type { Event, Fields, Reading, RegistryId, Snapshot } from '../types';
 
 export const MONITOR_CEILING = 30;
-const MONITOR_SCHEDULE = 'CRON_TZ=America/New_York 0 7 * * *';
+/** Mondays at 7:00 in New York. Each Monitor run is paid for, and a licence status rarely changes within a week. */
+const MONITOR_SCHEDULE = 'CRON_TZ=America/New_York 0 7 * * 1';
 const MONITOR_PURPOSE = 'The licence status, expiry date or discipline flag changes';
 const CALLER_TIMEOUT_MS = 10_000;
 const COMPLAINTS_STEPS = 20;
@@ -430,7 +431,40 @@ async function startMonitor(
 }
 
 async function setMonitorId(db: D1Database, watch_id: string, monitor_id: string | null): Promise<void> {
-  await db.prepare('UPDATE watches SET monitor_id = ? WHERE watch_id = ?').bind(monitor_id, watch_id).run();
+  await db
+    .prepare('UPDATE watches SET monitor_id = ?, monitor_schedule = ? WHERE watch_id = ?')
+    .bind(monitor_id, monitor_id === null ? null : MONITOR_SCHEDULE, watch_id)
+    .run();
+}
+
+/**
+ * Moves every Monitor that was made on another schedule to MONITOR_SCHEDULE, and returns how many it moved.
+ * Without this, a change of schedule would reach new watches only. A Monitor that cannot be moved is logged
+ * and tried again on the next call.
+ */
+export async function alignMonitorSchedules(db: D1Database, client: TinyFish): Promise<number> {
+  const { results } = await db
+    .prepare(
+      'SELECT watch_id, monitor_id FROM watches WHERE deleted_at IS NULL AND monitor_id IS NOT NULL AND (monitor_schedule IS NULL OR monitor_schedule <> ?)',
+    )
+    .bind(MONITOR_SCHEDULE)
+    .all<{ watch_id: string; monitor_id: string }>();
+
+  let moved = 0;
+  for (const watch of results) {
+    try {
+      await client.setMonitorSchedule(watch.monitor_id, MONITOR_SCHEDULE);
+      await db
+        .prepare('UPDATE watches SET monitor_schedule = ? WHERE watch_id = ? AND monitor_id = ?')
+        .bind(MONITOR_SCHEDULE, watch.watch_id, watch.monitor_id)
+        .run();
+      moved += 1;
+    } catch (err) {
+      if (!(err instanceof TinyFishError)) throw err;
+      console.warn(`Monitor schedule not moved for watch ${watch.watch_id}: ${err.code}`);
+    }
+  }
+  return moved;
 }
 
 /** Returns the record link that the search run found for this licence number, or null. */

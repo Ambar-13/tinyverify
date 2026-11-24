@@ -1,5 +1,5 @@
 /**
- * Canaries prove, every day, that each registry still reads correctly. A known public record is read live, both
+ * Canaries prove, on a schedule, that each registry still reads correctly. A known public record is read live, both
  * parsers and the agreement check run on it, and the result is compared with values a person checked. A registry
  * whose latest canary failed is reported as degraded.
  */
@@ -46,8 +46,11 @@ const GOLDEN = golden as unknown as GoldenFile;
 
 export type Health = "ok" | "degraded" | "unknown";
 
-/** A canary older than this no longer says anything about today, so health reports unknown. */
-const STALE_MS = 48 * 3_600_000;
+/**
+ * A canary older than this no longer says anything about the registry, so health reports unknown. A registry
+ * read by Fetch is checked every day, and one that needs an agent run once a week. Each gets a day's slack.
+ */
+const STALE_MS = { fetch: 48 * 3_600_000, agent: 8 * 86_400_000 } as const;
 
 interface Verdict {
   ok: boolean;
@@ -211,7 +214,7 @@ async function checkOneFetched(
   return judge([adapter.parseHtml(html), adapter.parseText(html)], expected);
 }
 
-/** Agent registries: queue one canary run for the first ready golden record. Only even UTC days. */
+/** Agent registries: queue one canary run for the first ready golden record. Mondays only (UTC). */
 async function queueAgentCanary(
   env: Env,
   db: D1Database,
@@ -243,8 +246,9 @@ async function queueAgentCanary(
 }
 
 /**
- * Runs the daily canaries. Fetch registries are read now. Agent registries get a queued run on even
- * UTC days only, to halve their agent cost. A registry with no adapter gets no row, so its health is unknown.
+ * Runs the canaries. Fetch registries are read now, every day, because a Fetch costs nothing. Agent registries
+ * get a queued run on Mondays (UTC) only, because each agent run is paid for. A registry with no adapter gets
+ * no row, so its health is unknown.
  */
 export async function runAll(
   env: Env,
@@ -260,7 +264,7 @@ export async function runAll(
       const verdict = await checkFetched(env, client, info.id, adapter);
       if (verdict)
         await insertCanary(db, info.id, verdict.ok, verdict.detail, now);
-    } else if (now.getUTCDate() % 2 === 0) {
+    } else if (now.getUTCDay() === 1) {
       await queueAgentCanary(env, db, info.id, adapter);
     }
   }
@@ -318,7 +322,7 @@ export async function onRun(
 
 /**
  * The newest canary per registry decides its health. A registry with no canary, or whose newest
- * canary is more than 48 hours old, is unknown.
+ * canary is older than its registry's check interval allows, is unknown.
  */
 export async function health(
   db: D1Database,
@@ -331,7 +335,8 @@ export async function health(
   for (const info of registries) {
     const row = latest.get(info.id);
     const stale =
-      row !== undefined && Date.parse(row.ran_at) < now.getTime() - STALE_MS;
+      row !== undefined &&
+      Date.parse(row.ran_at) < now.getTime() - STALE_MS[info.read_route];
     out[info.id] =
       row === undefined || stale ? "unknown" : row.ok ? "ok" : "degraded";
   }

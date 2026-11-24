@@ -64,9 +64,9 @@ const layoutPages = import.meta.glob("./fixtures/canary/*.html", {
 const MQA_LAYOUT =
   layoutPages["./fixtures/canary/mqa-layout-changed.fetch.html"];
 
-// 4 November is an even UTC day, 5 November an odd one.
-const EVEN_DAY = new Date("2026-11-04T12:00:00.000Z");
-const ODD_DAY = new Date("2026-11-05T12:00:00.000Z");
+// 2 November 2026 is a Monday in UTC, 3 November a Tuesday.
+const MONDAY = new Date("2026-11-02T12:00:00.000Z");
+const TUESDAY = new Date("2026-11-03T12:00:00.000Z");
 const OLD = new Date("2026-01-01T00:00:00.000Z");
 const RECENT = new Date("2026-11-03T12:00:00.000Z");
 
@@ -228,7 +228,7 @@ describe("records kept in PRIVATE_GOLDEN", () => {
   it("gives a registry no canary row when it has no record, committed or private", async () => {
     // A local .dev.vars may set the secret, so it is taken out here.
     const noSecret = { ...env, PRIVATE_GOLDEN: undefined };
-    await runAll(noSecret, db, fetchClient(MQA_OK), EVEN_DAY);
+    await runAll(noSecret, db, fetchClient(MQA_OK), MONDAY);
     expect(await latestFor("fl-mqa")).toBeUndefined();
     expect(await latestFor("fl-dbpr")).toBeUndefined();
   });
@@ -238,7 +238,7 @@ describe("records kept in PRIVATE_GOLDEN", () => {
       { ...env, PRIVATE_GOLDEN: "{not json" },
       db,
       fetchClient(MQA_OK),
-      EVEN_DAY,
+      MONDAY,
     );
     expect(await latestFor("fl-mqa")).toBeUndefined();
     const jobs = await queuedJobs();
@@ -254,7 +254,7 @@ describe("runAll, fetch registries", () => {
       withPrivate,
       db,
       fetchClient((url) => pageForMqa(url, MQA_OK)),
-      EVEN_DAY,
+      MONDAY,
     );
 
     const row = await latestFor("fl-mqa");
@@ -263,7 +263,7 @@ describe("runAll, fetch registries", () => {
   });
 
   it("inserts ok:false naming the missing label when the layout changed", async () => {
-    await runAll(withPrivate, db, fetchClient(MQA_LAYOUT), EVEN_DAY);
+    await runAll(withPrivate, db, fetchClient(MQA_LAYOUT), MONDAY);
 
     const row = await latestFor("fl-mqa");
     expect(row?.ok).toBe(false);
@@ -275,7 +275,7 @@ describe("runAll, fetch registries", () => {
       withPrivate,
       db,
       fetchClient("", { code: "timeout" }),
-      EVEN_DAY,
+      MONDAY,
     );
 
     const row = await latestFor("fl-mqa");
@@ -286,7 +286,7 @@ describe("runAll, fetch registries", () => {
   it("checks both Florida MQA golden records, and fails the registry when the second one fails", async () => {
     const onlyNurseLayout = (url: string) =>
       url.includes(NURSE_LINK_ID) ? MQA_LAYOUT : MQA_OK;
-    await runAll(withPrivate, db, fetchClient(onlyNurseLayout), EVEN_DAY);
+    await runAll(withPrivate, db, fetchClient(onlyNurseLayout), MONDAY);
 
     const row = await latestFor("fl-mqa");
     expect(row?.ok).toBe(false);
@@ -300,7 +300,7 @@ describe("runAll, fetch registries", () => {
       withPrivate,
       db,
       fetchClient((url) => pageForMqa(url, changed)),
-      EVEN_DAY,
+      MONDAY,
     );
 
     const row = await latestFor("fl-mqa");
@@ -310,12 +310,12 @@ describe("runAll, fetch registries", () => {
 });
 
 describe("runAll, agent registries", () => {
-  it("queues one canary job for each agent registry with a golden record on even UTC days (step cap on)", async () => {
+  it("queues one canary job for each agent registry with a golden record on Mondays (step cap on)", async () => {
     await runAll(
       { ...env, AGENT_STEP_CAP: "on" },
       db,
       fetchClient(MQA_OK),
-      EVEN_DAY,
+      MONDAY,
     );
 
     const jobs = await queuedJobs();
@@ -339,7 +339,7 @@ describe("runAll, agent registries", () => {
       { ...env, AGENT_STEP_CAP: "off" },
       db,
       fetchClient(MQA_OK),
-      EVEN_DAY,
+      MONDAY,
     );
 
     const jobs = await queuedJobs();
@@ -350,8 +350,8 @@ describe("runAll, agent registries", () => {
     expect(payload.request.goal).toContain("Use at most 20 actions.");
   });
 
-  it("queues nothing for agent registries on odd UTC days", async () => {
-    await runAll(env, db, fetchClient(MQA_OK), ODD_DAY);
+  it("queues nothing for agent registries on any other day", async () => {
+    await runAll(env, db, fetchClient(MQA_OK), TUESDAY);
 
     expect(await queuedJobs()).toHaveLength(0);
   });
@@ -556,7 +556,7 @@ describe("health", () => {
     });
   });
 
-  it("reports unknown when the newest canary is more than 48 hours old", async () => {
+  it("reports unknown when a daily canary is more than 48 hours old", async () => {
     await insertCanary(
       db,
       "fl-mqa",
@@ -575,6 +575,16 @@ describe("health", () => {
     const result = await health(db, NOW);
     expect(result["fl-mqa"]).toBe("unknown");
     expect(result["fl-dbpr"]).toBe("ok");
+  });
+
+  it("keeps a weekly canary for 8 days, since an agent registry is checked on Mondays only", async () => {
+    const day = 86_400_000;
+    await insertCanary(db, "ca-cslb", true, null, new Date(NOW.getTime() - 7 * day));
+    expect((await health(db, NOW))["ca-cslb"]).toBe("ok");
+
+    await db.prepare("DELETE FROM canaries").run();
+    await insertCanary(db, "ca-cslb", true, null, new Date(NOW.getTime() - 8 * day - 1));
+    expect((await health(db, NOW))["ca-cslb"]).toBe("unknown");
   });
 
   it("reports degraded only for the registry whose latest canary failed", async () => {

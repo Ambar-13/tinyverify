@@ -7,6 +7,7 @@ import {
   WatchLimit,
   onComplaintsRun,
   validateCallerWebhook,
+  alignMonitorSchedules,
   createRecordWatch,
   deleteWatch,
   enqueueRechecks,
@@ -93,13 +94,22 @@ function stubClient() {
     run: { id: 'run_base', results: [{ text: page('mqa-clear') }], errors: [] as unknown[] },
   }));
   const deleteMonitor = vi.fn(async (_id: string) => {});
+  const setMonitorSchedule = vi.fn(async (_id: string, _schedule: string) => {});
   const stepHtml = vi.fn(async (_run: string, _step: string) => page('mqa-clear'));
   const fetchPages = vi.fn(async (_urls: string[], _opts?: unknown) => ({
     results: [{ text: page('mqa-clear') }],
     errors: [] as unknown[],
   }));
-  const client = { createMonitor, deleteMonitor, stepHtml, fetchPages, runAsync: vi.fn(), getRun: vi.fn() };
-  return { client: client as unknown as TinyFish, createMonitor, deleteMonitor, stepHtml, fetchPages };
+  const client = {
+    createMonitor,
+    deleteMonitor,
+    setMonitorSchedule,
+    stepHtml,
+    fetchPages,
+    runAsync: vi.fn(),
+    getRun: vi.fn(),
+  };
+  return { client: client as unknown as TinyFish, createMonitor, deleteMonitor, setMonitorSchedule, stepHtml, fetchPages };
 }
 
 // The contractor board's complaint view as the two readers take it: a header row, then one row per complaint,
@@ -253,7 +263,7 @@ describe('createRecordWatch', () => {
       type: 'fetch',
       name: 'fl-mqa ME000000',
       config: { format: 'html' },
-      schedule_cron: 'CRON_TZ=America/New_York 0 7 * * *',
+      schedule_cron: 'CRON_TZ=America/New_York 0 7 * * 1',
       purpose: 'The licence status, expiry date or discipline flag changes',
       webhook_url: `${BASE_URL}/hooks/tinyfish/monitor/${HOOK_SECRET}`,
     });
@@ -261,6 +271,7 @@ describe('createRecordWatch', () => {
 
     const watch = await getWatch(db, result.watch_id);
     expect(watch?.monitor_id).toBe('mon_new');
+    expect(watch?.monitor_schedule).toBe('CRON_TZ=America/New_York 0 7 * * 1');
     expect(JSON.parse(watch?.last_fields_json ?? 'null')).toEqual(baseline);
   });
 
@@ -291,6 +302,67 @@ describe('createRecordWatch', () => {
     expect(stub.createMonitor).toHaveBeenCalledTimes(1);
     expect((await getKey(db, 'fl-mqa', 'ME000000'))?.link_json).toContain('"licInd":"111"');
     expect((await getWatch(db, created.watch_id))?.monitor_id).toBe('mon_new');
+  });
+});
+
+describe('alignMonitorSchedules', () => {
+  const WEEKLY = 'CRON_TZ=America/New_York 0 7 * * 1';
+  const setSchedule = (watch_id: string, schedule: string | null) =>
+    db.prepare('UPDATE watches SET monitor_schedule = ? WHERE watch_id = ?').bind(schedule, watch_id).run();
+
+  async function watchWithMonitor(): Promise<string> {
+    await upsertKey(db, 'fl-mqa', 'ME000000', { licInd: '111', proCde: '22' });
+    const { watch_id } = await createRecordWatch(testEnv(), db, stubClient().client, 'fl-mqa', 'ME000000');
+    return watch_id;
+  }
+
+  it('leaves a Monitor that is already on the schedule alone', async () => {
+    await watchWithMonitor();
+    const stub = stubClient();
+
+    expect(await alignMonitorSchedules(db, stub.client)).toBe(0);
+    expect(stub.setMonitorSchedule).not.toHaveBeenCalled();
+  });
+
+  it('moves a Monitor made on another schedule, or before schedules were kept, once', async () => {
+    const watch_id = await watchWithMonitor();
+    const stub = stubClient();
+
+    for (const old of ['CRON_TZ=America/New_York 0 7 * * *', null]) {
+      await setSchedule(watch_id, old);
+      expect(await alignMonitorSchedules(db, stub.client)).toBe(1);
+      expect(stub.setMonitorSchedule).toHaveBeenLastCalledWith('mon_new', WEEKLY);
+      expect((await getWatch(db, watch_id))?.monitor_schedule).toBe(WEEKLY);
+    }
+    expect(await alignMonitorSchedules(db, stub.client)).toBe(0);
+    expect(stub.setMonitorSchedule).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips a deleted watch and a watch with no Monitor', async () => {
+    const watch_id = await watchWithMonitor();
+    await setSchedule(watch_id, null);
+    const stub = stubClient();
+
+    await db.prepare('UPDATE watches SET monitor_id = NULL WHERE watch_id = ?').bind(watch_id).run();
+    expect(await alignMonitorSchedules(db, stub.client)).toBe(0);
+
+    await db.prepare("UPDATE watches SET monitor_id = 'mon_new' WHERE watch_id = ?").bind(watch_id).run();
+    await deleteWatch(db, stub.client, watch_id);
+    expect(await alignMonitorSchedules(db, stub.client)).toBe(0);
+    expect(stub.setMonitorSchedule).not.toHaveBeenCalled();
+  });
+
+  it('keeps the old schedule on record when TinyFish refuses, so the next call tries again', async () => {
+    const watch_id = await watchWithMonitor();
+    await setSchedule(watch_id, null);
+    const stub = stubClient();
+    stub.setMonitorSchedule.mockRejectedValueOnce(new TinyFishError('bad_request', 400, 'no'));
+
+    expect(await alignMonitorSchedules(db, stub.client)).toBe(0);
+    expect((await getWatch(db, watch_id))?.monitor_schedule).toBeNull();
+
+    expect(await alignMonitorSchedules(db, stub.client)).toBe(1);
+    expect((await getWatch(db, watch_id))?.monitor_schedule).toBe(WEEKLY);
   });
 });
 

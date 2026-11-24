@@ -47,6 +47,7 @@ describe('migration 0008 indexes', () => {
       '0007_watch_complaints.sql',
       '0008_indexes.sql',
       '0009_own_keys.sql',
+      '0010_monitor_schedule.sql',
     ]);
   });
 
