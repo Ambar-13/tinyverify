@@ -114,7 +114,7 @@ A name search can return many people. Each row is scored against the name you ty
 
 TinyFish allows two Agent runs at once, and a Worker request can't wait minutes for one. So every run goes through a queue in D1 (`src/queue/queue.ts`). Before a run starts, the most it can cost is held against a daily limit. When it ends, what it used is written to a ledger, once per run.
 
-A watch tells you when a licence changes (`src/watch/watch.ts`). Where a record has a stable link, a TinyFish Monitor reads the page once a week and calls a webhook. Both parsers read the page again. It counts as a change only if the status, number, expiry, discipline or name moved. A page that only changed its "data as of" date is `unchanged`. Where there is no stable link, a daily Agent run reads the record again.
+A watch tells you when a licence changes (`src/watch/`). Where a record has a stable link, a TinyFish Monitor reads the page once a week and calls a webhook. Both parsers read the page again. It counts as a change only if the status, number, expiry, discipline or name moved. A page that only changed its "data as of" date is `unchanged`. Where there is no stable link, a daily Agent run reads the record again.
 
 Each adapter is also checked on a schedule against a known public record (`src/watch/canary.ts`). `/status` tells you if its parsers still agree with values checked by hand.
 

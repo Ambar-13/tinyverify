@@ -10,7 +10,8 @@ import { pageApp } from '../web/page';
 import type { Env } from '../env';
 // Importing these modules registers their queue continuations.
 import '../lookup/check';
-import '../watch/watch';
+import '../watch/recheck';
+import '../watch/complaints';
 import '../watch/canary';
 
 export const app = new Hono<{ Bindings: Env }>();

@@ -6,7 +6,8 @@ import { dispatch, pollOwnRuns, sweep } from './queue/queue';
 import { purgeOlderThan } from './store';
 import { clientFor } from './tinyfish/service-client';
 import { runAll } from './watch/canary';
-import { alignMonitorSchedules, enqueueRechecks } from './watch/watch';
+import { enqueueRechecks } from './watch/recheck';
+import { alignMonitorSchedules } from './watch/watch';
 
 const DAY_MS = 86_400_000;
 

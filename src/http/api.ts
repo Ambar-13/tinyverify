@@ -38,13 +38,13 @@ import {
   countWatches,
   createRecordWatch,
   deleteWatch,
-  effectiveTier,
   InvalidInput,
   InvalidWebhook,
   MONITOR_CEILING,
-  onMonitorWebhook,
   WatchLimit,
 } from '../watch/watch';
+import { onMonitorWebhook } from '../watch/monitor';
+import { effectiveTier } from '../watch/outcome';
 import { parseVerifyRequest, type RegistryId, type VerifyInput } from '../types';
 import { tryGetAdapter } from '../registries/index';
 import { TinyFishError, type RunResult, type TinyFish } from '../tinyfish/client';

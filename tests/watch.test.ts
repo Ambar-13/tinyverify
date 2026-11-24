@@ -5,17 +5,15 @@ import {
   InvalidInput,
   InvalidWebhook,
   WatchLimit,
-  onComplaintsRun,
-  validateCallerWebhook,
   alignMonitorSchedules,
   createRecordWatch,
   deleteWatch,
-  enqueueRechecks,
-  forwardEvent,
-  onMonitorWebhook,
-  onRecheckRun,
   resolveWatchFromSearch,
 } from '../src/watch/watch';
+import { onComplaintsRun } from '../src/watch/complaints';
+import { forwardEvent, validateCallerWebhook } from '../src/watch/forward';
+import { onMonitorWebhook } from '../src/watch/monitor';
+import { enqueueRechecks, onRecheckRun } from '../src/watch/recheck';
 import { type Job } from '../src/queue/queue';
 import {
   getKey,
