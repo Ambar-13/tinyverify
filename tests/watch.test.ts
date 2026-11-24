@@ -2059,35 +2059,90 @@ describe('re-check cap and the shared ceiling', () => {
   });
 });
 
-describe('a missing discipline flag reads as false', () => {
-  it('a DBPR baseline from createRecordWatch, a quiet Monitor read and a quiet complaint week raise no status_change', async () => {
-    await upsertKey(db, 'fl-dbpr', 'CCC0000000', { id: '0'.repeat(32) });
-    const stub = stubClient();
-    // The baseline is read from the DBPR live page, whose parsers give a null discipline flag.
-    stub.createMonitor.mockResolvedValueOnce({
-      monitor: { id: 'mon_dbpr_flag' },
-      run: { id: 'run_dbpr_base', results: [{ text: page('dbpr-live') }], errors: [] as unknown[] },
-    });
-    const created = await createRecordWatch(testEnv(), db, stub.client, 'fl-dbpr', 'CCC0000000');
-    expect(created.tier).toBe('monitor');
-    const watch_id = created.watch_id;
-    const baselineStored = JSON.parse((await getWatch(db, watch_id))?.last_fields_json ?? 'null') as Fields;
-    expect(baselineStored.discipline_flag).toBe(false);
+// A register that keeps complaints behind a second run says nothing about discipline on its record page. Until a
+// complaint run has read the view, the watch does not know, and it must not store "none".
+describe('discipline that has not been read yet', () => {
+  const stored = async (watch_id: string): Promise<Fields> =>
+    JSON.parse((await getWatch(db, watch_id))?.last_fields_json ?? 'null') as Fields;
+  const kinds = async (watch_id: string): Promise<string[]> => (await eventsOf(watch_id)).map((e) => e.kind);
 
-    await onMonitorWebhook(testEnv(), db, stub.client, hook('mon_dbpr_flag', page('dbpr-live')));
+  async function contractorWatch(stub: ReturnType<typeof stubClient>): Promise<string> {
+    await upsertKey(db, 'fl-dbpr', 'CCC1234567', { id: '0'.repeat(32) });
+    stub.createMonitor.mockResolvedValueOnce({
+      monitor: { id: 'mon_unread' },
+      run: { id: 'run_unread', results: [{ text: recordPage }], errors: [] as unknown[] },
+    });
+    return (await createRecordWatch(testEnv(), db, stub.client, 'fl-dbpr', 'CCC1234567')).watch_id;
+  }
+
+  const cases = ['2023000001', '2025000002', '2025000003', '2026000004'];
+  async function complaintRun(stub: ReturnType<typeof stubClient>, watch_id: string, count: number): Promise<void> {
+    const rows = cases.slice(0, count);
+    viewAfterRecord(stub, complaintView(rows.map((n) => viewRow(n, 'Closed', '04/11/2025'))));
     await onComplaintsRun(
       testEnv(),
       db,
       stub.client,
       watch_id,
       run({
-        steps: [{ step_id: 'quiet' }],
-        result: { complaints: [], complaint_view_opened: true, evidence_line: 'No complaints on file' },
+        steps: WITH_RECORD,
+        result: {
+          complaints: rows.map((case_number) => ({ case_number, status: 'Closed', date: '04/11/2025', description: 'x' })),
+          complaint_view_opened: true,
+        },
       }),
     );
-    expect((await eventsOf(watch_id)).filter((e) => e.kind === 'status_change')).toHaveLength(0);
-    const stored = JSON.parse((await getWatch(db, watch_id))?.last_fields_json ?? 'null') as Fields;
-    expect(stored.discipline_flag).toBe(false);
+  }
+
+  it('is stored as not read by the baseline, by a Monitor read, and by a complaint run that could not open the view', async () => {
+    const stub = stubClient();
+    const watch_id = await contractorWatch(stub);
+    expect((await stored(watch_id)).discipline_flag).toBeNull();
+
+    await onMonitorWebhook(testEnv(), db, stub.client, hook('mon_unread', recordPage));
+    expect((await stored(watch_id)).discipline_flag).toBeNull();
+
+    // The run ended on the record page and never reached the complaint view.
+    stub.stepHtml.mockImplementation(async () => recordPage);
+    await onComplaintsRun(testEnv(), db, stub.client, watch_id, run({ steps: WITH_RECORD, result: {} }));
+    expect((await kinds(watch_id)).at(0)).toBe('check_failed');
+    expect((await stored(watch_id)).discipline_flag).toBeNull();
+  });
+
+  it('takes the first complaint read as the baseline, and reports a change only after it', async () => {
+    const stub = stubClient();
+    const watch_id = await contractorWatch(stub);
+
+    // Three complaints that were on file before the watch existed.
+    await complaintRun(stub, watch_id, 3);
+    expect(await kinds(watch_id)).not.toContain('status_change');
+    const first = (await eventsOf(watch_id))[0];
+    expect(first.kind).toBe('unchanged');
+    expect(first.evidence.note).toContain('first complaint read');
+    expect(await stored(watch_id)).toMatchObject({ discipline_flag: true });
+    expect((await stored(watch_id)).discipline_actions).toHaveLength(3);
+
+    // A fourth complaint arrives: that is a change.
+    await complaintRun(stub, watch_id, 4);
+    const change = (await eventsOf(watch_id))[0];
+    expect(change.kind).toBe('status_change');
+    expect(change.before?.discipline_actions).toHaveLength(3);
+    expect(change.after?.discipline_actions).toHaveLength(4);
+  });
+
+  it('reports the first complaint when an earlier read found none', async () => {
+    const stub = stubClient();
+    const watch_id = await contractorWatch(stub);
+
+    await complaintRun(stub, watch_id, 0);
+    expect(await kinds(watch_id)).not.toContain('status_change');
+    expect((await stored(watch_id)).discipline_flag).toBe(false);
+
+    await complaintRun(stub, watch_id, 1);
+    const change = (await eventsOf(watch_id))[0];
+    expect(change.kind).toBe('status_change');
+    expect(change.before).toMatchObject({ discipline_flag: false });
+    expect(change.after).toMatchObject({ discipline_flag: true });
   });
 });
 

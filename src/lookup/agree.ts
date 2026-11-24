@@ -63,7 +63,12 @@ export function compareForWatch(
   // discipline_actions is compared by count: a change in how many actions there are is a change.
   const valueOf = (fields: Fields, field: keyof Fields): unknown =>
     field === 'discipline_actions' ? fields.discipline_actions.length : fields[field];
-  const differs = (field: keyof Fields): boolean => !same(valueOf(before, field), valueOf(after, field));
+  // A discipline flag of null means discipline was not read. A reading cannot differ from one that was never
+  // made, so the first reading is a baseline and the two discipline fields are left out of the comparison.
+  const unread = before.discipline_flag === null || after.discipline_flag === null;
+  const differs = (field: keyof Fields): boolean =>
+    !(unread && (field === 'discipline_flag' || field === 'discipline_actions')) &&
+    !same(valueOf(before, field), valueOf(after, field));
 
   const changes = WATCHED.filter(differs).map((field) => ({
     field,

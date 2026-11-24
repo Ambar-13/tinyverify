@@ -131,19 +131,16 @@ async function sha256Hex(text: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** A missing discipline flag reads as false: no complaint and no discipline on file. */
-function withFlag(fields: Fields): Fields {
-  return { ...fields, discipline_flag: fields.discipline_flag ?? false };
-}
-
 function storedFields(json: string | null): Fields | null {
   if (json === null) return null;
-  // Fields stored before discipline_actions existed have no list; treat that as none.
+  // Fields stored before discipline_actions existed have no list; treat that as none. A discipline flag of null
+  // is kept as it is: it means discipline has not been read yet, which is not the same as none on file.
   const parsed = JSON.parse(json) as Partial<Fields>;
-  return withFlag({
+  return {
     ...parsed,
+    discipline_flag: parsed.discipline_flag ?? null,
     discipline_actions: Array.isArray(parsed.discipline_actions) ? parsed.discipline_actions : [],
-  } as Fields);
+  } as Fields;
 }
 
 function pick(fields: Fields, keys: (keyof Fields)[]): Partial<Fields> {
@@ -208,7 +205,7 @@ function judge(readings: Reading[], licence: string): Verdict {
   const found =
     agreement.fields.licence_number === null ? null : normaliseLicenceNumber(agreement.fields.licence_number);
   if (found !== licence) return { note: LICENCE_MISMATCH };
-  return { fields: withFlag(agreement.fields) };
+  return { fields: agreement.fields };
 }
 
 async function pageUrl(db: D1Database, adapter: Adapter, watch: WatchRow): Promise<string> {
@@ -691,12 +688,16 @@ async function processMonitorRun(
   return 'note' in verdict;
 }
 
-/** The DBPR Monitor does not own the discipline fields; complaint runs do. */
-function monitorFields(watch: WatchRow, previous: Fields | null, fields: Fields): Fields {
-  if (watch.registry !== 'fl-dbpr') return fields;
+/**
+ * A page that says nothing about discipline leaves what is stored about it alone. A register that keeps
+ * complaints behind a second run always reads this way, so its complaint runs own these two fields. Until one of
+ * them has read the view the flag stays null: not read is never stored as none.
+ */
+function keepDiscipline(previous: Fields | null, fields: Fields): Fields {
+  if (fields.discipline_flag !== null) return fields;
   return {
     ...fields,
-    discipline_flag: previous?.discipline_flag ?? false,
+    discipline_flag: previous?.discipline_flag ?? null,
     discipline_actions: previous?.discipline_actions ?? [],
   };
 }
@@ -717,7 +718,7 @@ async function recordOutcome(
   }
 
   const previous = storedFields(watch.last_fields_json);
-  const next = monitorFields(watch, previous, verdict.fields);
+  const next = keepDiscipline(previous, verdict.fields);
   await updateWatchFields(db, watch.watch_id, next);
   if (previous === null) return [];
 
@@ -887,7 +888,7 @@ function blankFields(licence_number: string): Fields {
     expires: null,
     issued: null,
     licence_type: null,
-    discipline_flag: false,
+    discipline_flag: null,
     discipline_actions: [],
     data_as_of: null,
     city: null,
@@ -896,6 +897,7 @@ function blankFields(licence_number: string): Fields {
 }
 
 const QUOTE_UNVERIFIED = 'complaint_quote_unverified';
+const FIRST_COMPLAINT_READ = 'first complaint read: what was already on file, not a change';
 const AGENT_ANSWER_DIFFERS = 'agent_answer_differs';
 
 /** Notes joined into one sentence list, leaving out the ones that are empty. */
@@ -979,7 +981,8 @@ export async function onComplaintsRun(
   const claimed = typeof view.evidence_line === 'string' ? view.evidence_line.trim() : '';
   const line = lineOnPage(claimed, html) ? claimed : '';
   const unverified = claimed !== '' && line === '' ? QUOTE_UNVERIFIED : null;
-  const notes = [differs ? AGENT_ANSWER_DIFFERS : null, unverified];
+  const firstRead = previous !== null && previous.discipline_flag === null ? FIRST_COMPLAINT_READ : null;
+  const notes = [firstRead, differs ? AGENT_ANSWER_DIFFERS : null, unverified];
 
   await updateWatchFields(db, watch_id, next);
   if (previous === null) return;

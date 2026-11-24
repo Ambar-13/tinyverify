@@ -185,6 +185,29 @@ describe('compareForWatch', () => {
   });
 });
 
+describe('compareForWatch and discipline that was not read', () => {
+  const read = { ...mqaA, discipline_flag: true, discipline_actions: ['a', 'b'] };
+  const unread = { ...mqaA, discipline_flag: null, discipline_actions: [] };
+
+  it('does not count a first reading as a change', () => {
+    expect(compareForWatch(unread, read).changed).toBe(false);
+  });
+
+  it('does not count a page that says nothing about discipline as a change', () => {
+    expect(compareForWatch(read, unread).changed).toBe(false);
+  });
+
+  it('still reports the other watched fields', () => {
+    const result = compareForWatch(unread, { ...read, status: 'suspended' });
+    expect(result.changes.map((c) => c.field)).toEqual(['status']);
+  });
+
+  it('reports discipline once both sides were read', () => {
+    const none = { ...mqaA, discipline_flag: false, discipline_actions: [] };
+    expect(compareForWatch(none, read).changes.map((c) => c.field)).toEqual(['discipline_flag', 'discipline_actions']);
+  });
+});
+
 describe('expiryWarning', () => {
   const now = new Date('2026-11-04');
 
